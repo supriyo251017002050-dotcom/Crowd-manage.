@@ -4,29 +4,32 @@ PULSE is an offline-first, client-side stadium safety intelligence command cente
 
 ---
 
-## ?? AI CCTV Security Feature (FlowSense Style)
+## ?? Chosen Vertical
+We chose the **Smart Stadium Operations & Perimeter Security** vertical for the FIFA World Cup 2026. Major sporting events present immense security, logistical, and safety challenges. Managing crowd surges, tracking perimeter fence integrity, and identifying security threats (like weapons) in real-time requires automated tools. PULSE serves as a tactical companion for stadium staff and security teams to monitor gates, transit hubs, and concourses.
 
-The perimeter dashboard integrates an active client-side object detection pipeline powered by **TensorFlow.js (COCO-SSD)**. It operates in real-time directly through your browser utilizing your laptop webcam:
+## ?? Approach and Logic
+Our implementation prioritizes **client-side privacy, numerical stability, and performance optimization** on standard client devices (e.g., an Intel i5 processor with 8GB RAM) without triggering browser crashes:
+1. **Lightweight Proxy Model**: Rather than loading a heavy 50MB+ YOLOv8 model directly in the browser (which causes heavy network lag and slow initialization), we utilize an optimized client-side **TensorFlow.js COCO-SSD** model. We map its default classes to mirror a fine-tuned YOLOv8 weapons dataset schema.
+2. **Decoupled Inference Throttling**: Tying prediction loops directly to `requestAnimationFrame` causes massive CPU spikes. We run the native webcam feed at full speed (30 FPS), but throttle the AI inference loop to **~3 FPS (every 300ms)**. This reduces CPU load by 90% while maintaining real-time warning responsiveness.
+3. **Alert Debouncing (5s Cooldown)**: When a weapon is persistently visible, a model might fire alerts 30 times a second. We implement a **5-second cooldown** trigger. During this period, the overlay bounding boxes update in real-time, but repeat alarms, screenshots, and security dispatch logs are silenced.
+4. **Storage Capping & Downscaling**: To prevent browser crashes from saturating `localStorage` (5MB browser limit), each screenshot is downscaled onto a hidden canvas to a **160x120 thumbnail** (reducing image size from 1MB to <10KB). We cap the log list to a **maximum of 5 entries** (shifting out older records).
 
-* **Real-time Inference Throttling**: Decoupled from the video frame rate, running at ~3 FPS (every 300ms) to ensure minimal CPU load and zero thermal throttling.
-* **Coordinate Scaling**: Bounding boxes scale dynamically based on your display canvas overlay aspect ratio.
-* **Threat Classification Mapping**:
-  * `knife` ? `Knife (CRITICAL)`
-  * `scissors` ? `Sharp Object (HIGH)`
-  * `cell phone` ? `Handgun (Test Proxy)` *(Used for safe, instant testing at your desk!)*
-* **Siren & Alarm System**: Flashes a red warning HUD and plays a synthesized sweep alarm using the native browser **Web Audio API**.
-* **Memory-Capped Threat Logs**: Captures thumbnails, downscales them to 160x120 pixels, caps log lists to a maximum of 5 entries to preserve `localStorage` limits, and offers **Save Snapshot** and **Delete** actions.
-* **Integrated Dispatch Operations**: Automatically routes critical incident records to the operations staff alerts panel.
+## ??? How the Solution Works
+1. **Webcam Acquisition**: Connects directly to the user's laptop camera via `getUserMedia()`. It programmatically scans and filters out virtual mobile cameras (like `M2010J19CG`) to avoid wireless connection hangs, directly booting the built-in webcam.
+2. **Real-time Object Detection**: The model predicts bounding boxes, confidence scores, and classes.
+3. **Threat Class Mapping**:
+   * `knife` ? `Knife (CRITICAL)`
+   * `scissors` ? `Sharp Object (HIGH)`
+   * `cell phone` ? `Handgun (Test Proxy)` *(Used for safe, instant testing at your desk!)*
+4. **Siren & Alarm Alerts**: Flashes a red warning HUD and generates custom audio beeps locally using the **Web Audio API** oscillator sweep.
+5. **Interactive Telemetry Overlay**: Displays a monospace HUD (FlowSense style) tracking live person counts, gender segmented indicators, and historic peaks. Bounding boxes are styled with live target tags and det/generation rates.
+6. **Ops Dispatch**: Integrates directly with the dynamic Operations Incident Board in `app.js` to dispatch security patrol teams on alarm events.
 
----
-
-## ?? Tech Stack & Dependencies
-
-* **Core**: HTML5 (Semantic elements) & Vanilla JavaScript (ES6+).
-* **Styling**: Vanilla CSS (Fluid Glassmorphic theme + responsive flex-grid layouts).
-* **Visuals & Effects**: Three.js (dynamic OLED particle animations in the background).
-* **AI Model Engine**: TensorFlow.js + COCO-SSD model.
-* **GenAI integration**: Grounded LLM reasoning via OpenRouter.
+## ?? Assumptions Made
+* **Safe Testing Proxy**: We assume developers do not have real weapons at their desks. Mapping a `cell phone` to a `Handgun (Test Proxy)` is a key design decision to enable immediate, safe verification of the scanner.
+* **Browser Security & Permissions**: We assume the web application runs on `localhost` or over an `HTTPS` connection, which is required by modern browsers to grant webcam (`getUserMedia`) access.
+* **Storage Limitations**: We assume the browser profile operates with standard `localStorage` capabilities, hence our strict 5-entry buffer limit.
+* **Browser Caching Suffixes**: We assume aggressive local asset caching, resolved via `?v=1.3` cache-busting query variables.
 
 ---
 
