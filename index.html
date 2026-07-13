@@ -1,0 +1,1823 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PULSE — FIFA 2026 AI Survival Brain</title>
+  <meta name="description"
+    content="PULSE is the FIFA World Cup 2026 GenAI-powered safety companion — offline-first AI for navigation, heat risk, crowd intelligence, emergency translation, and group safety." />
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%23F59E0B'/><path d='M18 6l-8 12h6l-2 8 8-12h-6z' fill='%23000'/></svg>" />
+  <link rel="stylesheet" href="style.css?v=1.3" />
+</head>
+
+<body>
+
+  <!-- Ambient Blobs (OLED dark cinema effect) -->
+  <div class="ambient-blob blob-1" aria-hidden="true"></div>
+  <div class="ambient-blob blob-2" aria-hidden="true"></div>
+  <div class="ambient-blob blob-3" aria-hidden="true"></div>
+
+  <!-- Particle Background -->
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+  <!-- Toast Notifications -->
+  <div id="toast-container" role="status" aria-live="polite"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+     TOP NAVIGATION
+════════════════════════════════════════════════════════════ -->
+  <nav id="top-nav" role="navigation" aria-label="Main navigation">
+    <a class="nav-logo" href="#" aria-label="PULSE FIFA 2026 Home" onclick="goToPulseHome(); return false;">
+      <div class="nav-logo-icon" aria-hidden="true">
+        <!-- Zap / lightning SVG (Phosphor-style) -->
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M13 2L4.5 13.5H11L9 22l10.5-12H13V2z" />
+        </svg>
+      </div>
+      <span class="nav-logo-text">PULSE<span> ·</span></span>
+      <span
+        style="font-family:var(--font-mono); font-size:0.7rem; color:var(--fg-secondary); font-weight:500; margin-left:2px">FIFA
+        2026</span>
+    </a>
+
+    <div class="nav-tabs" role="tablist">
+      <button class="nav-tab active" data-page="home" role="tab" aria-selected="true" aria-controls="page-home">
+        <!-- House SVG -->
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          aria-hidden="true">
+          <path d="M3 12L12 3l9 9" />
+          <path d="M9 21V12h6v9" />
+          <path d="M3 12v9h18V12" />
+        </svg>
+        <span class="tab-label">Home</span>
+      </button>
+      <button class="nav-tab" data-page="chat" role="tab" aria-selected="false" aria-controls="page-chat">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          aria-hidden="true">
+          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+        </svg>
+        <span class="tab-label">AI Chat</span>
+      </button>
+      <button class="nav-tab" data-page="crowd" role="tab" aria-selected="false" aria-controls="page-crowd">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          aria-hidden="true">
+          <circle cx="12" cy="12" r="2" />
+          <path
+            d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+        </svg>
+        <span class="tab-label">Crowd Map</span>
+      </button>
+      <button class="nav-tab" data-page="heat" role="tab" aria-selected="false" aria-controls="page-heat">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          aria-hidden="true">
+          <path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z" />
+        </svg>
+        <span class="tab-label">Heat Risk</span>
+      </button>
+      <button class="nav-tab" data-page="group" role="tab" aria-selected="false" aria-controls="page-group">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          aria-hidden="true">
+          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+        </svg>
+        <span class="tab-label">Group Safety</span>
+      </button>
+      <button class="nav-tab" data-page="nav" role="tab" aria-selected="false" aria-controls="page-nav">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          aria-hidden="true">
+          <polygon points="3 11 22 2 13 21 11 13 3 11" />
+        </svg>
+        <span class="tab-label">Navigation</span>
+      </button>
+      <button class="nav-tab" data-page="transport" role="tab" aria-selected="false" aria-controls="page-transport">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          aria-hidden="true">
+          <rect x="1" y="3" width="15" height="13" />
+          <path d="M16 8h4l3 3v5h-7V8z" />
+          <circle cx="5.5" cy="18.5" r="2.5" />
+          <circle cx="18.5" cy="18.5" r="2.5" />
+        </svg>
+        <span class="tab-label">Transport</span>
+      </button>
+      <button class="nav-tab" data-page="sustain" role="tab" aria-selected="false" aria-controls="page-sustain">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          aria-hidden="true">
+          <path d="M2 22a8 8 0 018-8c2.4 0 4.5 1 6 2.6A8 8 0 0122 22H2z" />
+          <path d="M12 22V7" />
+          <path d="M12 7C12 4.2 14.3 2 17 2c0 2.8-2.3 5-5 5z" />
+          <path d="M12 7C12 4.2 9.7 2 7 2c0 2.8 2.3 5 5 5z" />
+        </svg>
+        <span class="tab-label">Eco</span>
+      </button>
+      <button class="nav-tab" data-page="ops" role="tab" aria-selected="false" aria-controls="page-ops">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          aria-hidden="true">
+          <rect x="2" y="3" width="20" height="14" rx="2" />
+          <path d="M8 21h8M12 17v4" />
+          <path d="M7 7h3M7 11h3M14 7h3M14 11h3" />
+        </svg>
+        <span class="tab-label">Ops Center</span>
+      </button>
+      <button class="nav-tab" data-page="perimeter" role="tab" aria-selected="false" aria-controls="page-perimeter">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        <span class="tab-label">Perimeter</span>
+      </button>
+      <button class="nav-tab" data-page="translate" role="tab" aria-selected="false" aria-controls="page-translate">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          aria-hidden="true">
+          <path d="M5 8l6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6" />
+        </svg>
+        <span class="tab-label">Translator</span>
+      </button>
+    </div>
+
+    <div class="nav-right">
+      <div class="status-pill green" aria-label="AI Offline Ready">
+        <div class="pulse-dot" aria-hidden="true"></div>
+        AI OFFLINE-READY
+      </div>
+      <div class="status-pill blue" aria-label="Current venue: MetLife Stadium">
+        MetLife · NY/NJ
+      </div>
+      <button class="status-pill" id="theme-toggle-btn" style="cursor:pointer; border:1px solid var(--border); display:inline-flex; align-items:center; gap:6px; font-weight:600; background:var(--bg-elevated); color:var(--fg)" aria-label="Toggle theme">
+        <svg class="theme-icon-moon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="theme-icon-sun" style="display:none" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <span>Theme</span>
+      </button>
+      <button class="status-pill blue-bright" id="nav-signin-btn" style="cursor:pointer; border:1px solid rgba(255,255,255,0.15); display:inline-flex; align-items:center; gap:6px; font-weight:600" aria-label="Sign In">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        Sign In
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════════
+     MAIN APP
+════════════════════════════════════════════════════════════ -->
+  <main id="app">
+
+    <!-- ══════════════════════════════════════
+       PAGE: HOME — COMMAND CENTER
+  ═══════════════════════════════════════ -->
+    <section id="page-home" class="page active" role="tabpanel" aria-labelledby="tab-home">
+      <div class="section-header">
+        <h1 class="section-title">Stadium <span class="accent">Command Center</span></h1>
+        <p class="section-sub">FIFA World Cup 2026™ · MetLife Stadium, East Rutherford NJ · AI monitoring active</p>
+      </div>
+
+      <!-- Ticker -->
+      <div class="live-ticker" aria-label="Live match and alert feed">
+        <div class="ticker-label">
+          <div class="pulse-dot" aria-hidden="true"></div>LIVE
+        </div>
+        <div class="ticker-overflow" aria-hidden="true">
+          <div class="ticker-content">
+            <span class="ticker-item">🇧🇷 Brazil <span class="ticker-score">2 – 1</span> Argentina 🇦🇷 · 78'</span>
+            <span class="ticker-item">🇫🇷 France <span class="ticker-score">1 – 0</span> England 🏴󠁧󠁢󠁥󠁮󠁧󠁿 ·
+              FT</span>
+            <span class="ticker-item">🇩🇪 Germany <span class="ticker-score">vs</span> Spain 🇪🇸 · 00:00</span>
+            <span class="ticker-item">PULSE AI · Gate A at 92% — rerouting via Gate D</span>
+            <span class="ticker-item">Heat Alert · NRG Houston · Risk CRITICAL</span>
+            <span class="ticker-item">🇧🇷 Brazil <span class="ticker-score">2 – 1</span> Argentina 🇦🇷 · 78'</span>
+            <span class="ticker-item">🇫🇷 France <span class="ticker-score">1 – 0</span> England 🏴󠁧󠁢󠁥󠁮󠁧󠁿 ·
+              FT</span>
+            <span class="ticker-item">🇩🇪 Germany <span class="ticker-score">vs</span> Spain 🇪🇸 · 00:00</span>
+            <span class="ticker-item">PULSE AI · Gate A at 92% — rerouting via Gate D</span>
+            <span class="ticker-item">Heat Alert · NRG Houston · Risk CRITICAL</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stacked Sections Deck -->
+      <div class="stacked-deck" id="home-stacked-deck">
+
+        <!-- Stacked Card 1: Telemetry & Matches -->
+        <div class="stacked-card">
+          <div class="stacked-content stacked-pane-wrapper">
+            <div style="font-family: var(--font-display); font-size: 1.1rem; color: var(--fg); margin-bottom: var(--space-4); letter-spacing: 0.05em; font-weight: 500; text-transform: uppercase;">
+              Live Telemetry & Matches
+            </div>
+            
+            <!-- KPI Cards -->
+            <div class="grid-4 mb-4">
+              <div class="kpi-card gold stagger-child">
+                <div class="kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="1.5">
+                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+                  </svg></div>
+                <div class="kpi-label">Active Fans</div>
+                <div class="kpi-value" id="kpi-fans">–</div>
+                <div class="kpi-change">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="2.5"
+                    aria-hidden="true">
+                    <polyline points="18 15 12 9 6 15" />
+                  </svg>
+                  4,230 from 30min ago
+                </div>
+              </div>
+              <div class="kpi-card red stagger-child">
+                <div class="kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="1.5">
+                    <circle cx="12" cy="12" r="2" />
+                    <path
+                      d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                  </svg></div>
+                <div class="kpi-label">Avg. Crowd Density</div>
+                <div class="kpi-value" id="kpi-density">–</div>
+                <div class="kpi-change" style="color:var(--red-bright)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    aria-hidden="true">
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                  Gate A critical
+                </div>
+              </div>
+              <div class="kpi-card orange stagger-child">
+                <div class="kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="1.5">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg></div>
+                <div class="kpi-label">Active Incidents</div>
+                <div class="kpi-value" id="kpi-incidents">–</div>
+                <div class="kpi-change" style="color:var(--orange-bright)">2 require action now</div>
+              </div>
+              <div class="kpi-card green stagger-child">
+                <div class="kpi-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="1.5">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg></div>
+                <div class="kpi-label">Stadium Health Score</div>
+                <div class="kpi-value" id="kpi-health">–</div>
+                <div class="kpi-change" style="color:var(--green-bright)">AI-computed · live</div>
+              </div>
+            </div>
+
+            <!-- Main Grid -->
+            <div class="grid-2" style="align-items:start">
+              <!-- Health Ring -->
+              <div class="card" style="margin-bottom:0">
+                <div class="card-title">AI Stadium Health Index</div>
+                <div class="health-score-ring">
+                  <svg class="ring-svg" width="152" height="152" viewBox="0 0 152 152" role="img"
+                    aria-label="Stadium health score ring">
+                    <circle class="ring-bg" cx="76" cy="76" r="56" />
+                    <circle class="ring-arc" id="health-ring" cx="76" cy="76" r="56"
+                      style="stroke-dasharray:351.86; stroke-dashoffset:351.86; stroke:var(--green)" />
+                  </svg>
+                  <div class="ring-text">
+                    <div class="ring-score" id="health-score-label" style="color:var(--green-bright)">–</div>
+                    <div class="ring-sublabel">Stadium Health</div>
+                  </div>
+                </div>
+                <div class="sep"></div>
+                <dl style="display:flex; flex-direction:column; gap:var(--space-2)">
+                  <div class="flex justify-between text-sm">
+                    <dt class="text-muted">Critical Zones</dt>
+                    <dd style="color:var(--red-bright); font-family:var(--font-mono); font-weight:600">2 zones</dd>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <dt class="text-muted">Heat Risk (Venue)</dt>
+                    <dd style="color:var(--orange-bright); font-family:var(--font-mono); font-weight:600">MODERATE</dd>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <dt class="text-muted">PULSE AI Status</dt>
+                    <dd style="color:var(--green-bright); font-family:var(--font-mono); font-weight:600">OFFLINE-READY</dd>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <dt class="text-muted">BLE Mesh Nodes</dt>
+                    <dd style="color:var(--blue-bright); font-family:var(--font-mono); font-weight:600">1,247 active</dd>
+                  </div>
+                </dl>
+                <div class="sep"></div>
+                <div id="stadium-health-advisory" style="font-size:0.75rem; line-height:1.5; color:var(--fg-secondary); font-style:italic; padding-top:2px">
+                  🤖 PULSE AI Status: Ingesting telemetry...
+                </div>
+              </div>
+
+              <!-- Matches -->
+              <div class="card" style="margin-bottom:0">
+                <div class="card-title">Today's Matches</div>
+                <div style="display:flex; flex-direction:column; gap:var(--space-2)">
+                  <div class="match-card stagger-child">
+                    <div class="live-ring" aria-hidden="true"></div>
+                    <div class="match-teams"><span class="match-flag">🇧🇷</span>Brazil<span
+                        class="match-vs">vs</span>Argentina<span class="match-flag">🇦🇷</span></div>
+                    <div class="match-score">2 – 1</div>
+                    <div style="text-align:right; flex-shrink:0">
+                      <span class="badge badge-live">LIVE 78'</span>
+                      <div style="font-family:var(--font-mono); font-size:0.65rem; color:var(--fg-muted); margin-top:3px">
+                        MetLife</div>
+                    </div>
+                  </div>
+                  <div class="match-card stagger-child">
+                    <div style="width:10px; height:10px; border-radius:50%; background:var(--fg-muted); flex-shrink:0"></div>
+                    <div class="match-teams"><span class="match-flag">🇫🇷</span>France<span
+                        class="match-vs">vs</span>England<span class="match-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span></div>
+                    <div class="match-score" style="color:var(--fg-secondary)">1 – 0</div>
+                    <div style="text-align:right; flex-shrink:0">
+                      <span class="badge"
+                        style="background:rgba(255,255,255,0.05); color:var(--fg-muted); border-color:var(--glass-border)">FT</span>
+                      <div style="font-family:var(--font-mono); font-size:0.65rem; color:var(--fg-muted); margin-top:3px">AT&T
+                      </div>
+                    </div>
+                  </div>
+                  <div class="match-card stagger-child">
+                    <div
+                      style="width:10px; height:10px; border-radius:50%; background:var(--blue); opacity:0.6; flex-shrink:0">
+                    </div>
+                    <div class="match-teams"><span class="match-flag">🇩🇪</span>Germany<span
+                        class="match-vs">vs</span>Spain<span class="match-flag">🇪🇸</span></div>
+                    <div class="match-score" style="color:var(--fg-muted); font-size:1rem">00:00</div>
+                    <div style="text-align:right; flex-shrink:0">
+                      <span class="badge badge-live" style="background:rgba(59,130,246,0.15); color:var(--blue-bright); border-color:rgba(59,130,246,0.3)">UPCOMING</span>
+                      <div style="font-family:var(--font-mono); font-size:0.65rem; color:var(--fg-muted); margin-top:3px">NRG
+                      </div>
+                    </div>
+                  </div>
+                  <div class="match-card stagger-child">
+                    <div
+                      style="width:10px; height:10px; border-radius:50%; background:var(--blue); opacity:0.6; flex-shrink:0">
+                    </div>
+                    <div class="match-teams"><span class="match-flag">🇲🇽</span>Mexico<span
+                        class="match-vs">vs</span>USA<span class="match-flag">🇺🇸</span></div>
+                    <div class="match-score" style="color:var(--fg-muted); font-size:1rem">03:00</div>
+                    <div style="text-align:right; flex-shrink:0">
+                      <span class="badge badge-live" style="background:rgba(59,130,246,0.15); color:var(--blue-bright); border-color:rgba(59,130,246,0.3)">UPCOMING</span>
+                      <div style="font-family:var(--font-mono); font-size:0.65rem; color:var(--fg-muted); margin-top:3px">
+                        Azteca</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stacked Card 2: AI Recommendations & Capabilities -->
+        <div class="stacked-card">
+          <div class="stacked-content stacked-pane-wrapper">
+            <div style="font-family: var(--font-display); font-size: 1.1rem; color: var(--fg); margin-bottom: var(--space-4); letter-spacing: 0.05em; font-weight: 500; text-transform: uppercase;">
+              AI Decision Center
+            </div>
+            
+            <!-- AI Recommendations inside the pane -->
+            <div class="card" style="background:transparent; border:none; box-shadow:none; padding:0; margin-bottom:var(--space-6)">
+              <div class="card-title" style="margin-bottom:var(--space-4)">AI Real-Time Recommendations</div>
+              <div style="display:flex; flex-direction:column; gap:var(--space-3)">
+                
+                <!-- Shadcn Alert Replica: Danger -->
+                <div class="ui-alert ui-alert-danger stagger-child">
+                  <div class="ui-alert-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"/>
+                      <line x1="12" y1="8" x2="12" y2="12"/>
+                      <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                  </div>
+                  <div class="ui-alert-content">
+                    <h4 class="ui-alert-title">Crowd Alert</h4>
+                    <p class="ui-alert-description">
+                      Gate A at 92% density. AI recommends opening Gate D overflow lanes and redirecting fans via south concourse.
+                    </p>
+                  </div>
+                  <div class="ui-alert-action">
+                    <button class="ui-alert-btn ui-alert-btn-ghost" onclick="this.closest('.ui-alert').remove()" style="cursor:pointer">Dismiss</button>
+                    <button class="ui-alert-btn ui-alert-btn-primary" onclick="navigate('crowd')" style="cursor:pointer">View Map</button>
+                  </div>
+                </div>
+
+                <!-- Shadcn Alert Replica: Warning -->
+                <div class="ui-alert ui-alert-warning stagger-child">
+                  <div class="ui-alert-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                      <line x1="12" y1="9" x2="12" y2="13"/>
+                      <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                  </div>
+                  <div class="ui-alert-content">
+                    <h4 class="ui-alert-title">Heat Warning</h4>
+                    <p class="ui-alert-description">
+                      Feels-like 97°F in Section 112. Mobile cooling unit dispatched. AI predicts 23 fans at elevated risk.
+                    </p>
+                  </div>
+                  <div class="ui-alert-action">
+                    <button class="ui-alert-btn ui-alert-btn-ghost" onclick="this.closest('.ui-alert').remove()" style="cursor:pointer">Dismiss</button>
+                    <button class="ui-alert-btn ui-alert-btn-primary" onclick="navigate('sos')" style="cursor:pointer">Help Guide</button>
+                  </div>
+                </div>
+
+                <!-- Shadcn Alert Replica: Info -->
+                <div class="ui-alert ui-alert-info stagger-child">
+                  <div class="ui-alert-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="16" x2="12" y2="12" />
+                      <line x1="12" y1="8" x2="12.01" y2="8" />
+                    </svg>
+                  </div>
+                  <div class="ui-alert-content">
+                    <h4 class="ui-alert-title">Transport Tip</h4>
+                    <p class="ui-alert-description">
+                      Next Shuttle departs Gate C at 22:10 — 42% fill. AI recommends Sections 110–120 depart at minute 85 to beat post-match surge.
+                    </p>
+                  </div>
+                  <div class="ui-alert-action">
+                    <button class="ui-alert-btn ui-alert-btn-ghost" onclick="this.closest('.ui-alert').remove()" style="cursor:pointer">Dismiss</button>
+                    <button class="ui-alert-btn ui-alert-btn-primary" onclick="navigate('nav')" style="cursor:pointer">Schedules</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Platform Capabilities inside the pane -->
+            <div class="card-section-title" style="margin-top:var(--space-2); margin-bottom:var(--space-4); font-size:1.15rem; font-family:var(--font-display); font-weight:500; color:var(--fg)">
+              Core Platform Capabilities
+            </div>
+            <div class="grid-4" style="gap:var(--space-4)">
+              
+              <!-- Smart Navigation Card -->
+              <div class="feature-capability-card purple-theme stagger-child">
+                <div class="feature-icon-container">
+                  <div class="feature-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+                      <line x1="9" y1="3" x2="9" y2="18"/>
+                      <line x1="15" y1="6" x2="15" y2="21"/>
+                      <path d="M12 9v4m0 0l3 3m-3-3l-3 3" stroke-dasharray="" stroke-width="2.5" stroke="var(--purple-icon)"/>
+                    </svg>
+                  </div>
+                </div>
+                <h3 class="feature-title">Smart Navigation</h3>
+                <p class="feature-description">AI-powered indoor & outdoor wayfinding for a seamless stadium experience.</p>
+              </div>
+
+              <!-- Crowd Management Card -->
+              <div class="feature-capability-card green-theme stagger-child">
+                <div class="feature-icon-container">
+                  <div class="feature-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                      <circle cx="9" cy="7" r="4"/>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                      <circle cx="19" cy="18" r="3" fill="var(--green-icon)" stroke="none"/>
+                      <polyline points="17 18 18.5 19.5 21 16.5" stroke="var(--bg-base)" stroke-width="2.5"/>
+                    </svg>
+                  </div>
+                </div>
+                <h3 class="feature-title">Crowd Management</h3>
+                <p class="feature-description">Predict crowd flow, avoid congestion & ensure safety with AI insights.</p>
+              </div>
+
+              <!-- Group Safety Card -->
+              <div class="feature-capability-card blue-theme stagger-child">
+                <div class="feature-icon-container">
+                  <div class="feature-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                      <circle cx="12" cy="11" r="3" stroke="var(--blue-icon)"/>
+                      <line x1="12" y1="14" x2="12" y2="18"/>
+                    </svg>
+                  </div>
+                </div>
+                <h3 class="feature-title">Group Safety</h3>
+                <p class="feature-description">Coordinate safety with friends using offline BLE mesh networking.</p>
+              </div>
+
+              <!-- Sustainability Card -->
+              <div class="feature-capability-card gold-theme stagger-child">
+                <div class="feature-icon-container">
+                  <div class="feature-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M12 22a8 8 0 0 0 8-8c0-5.5-8-12-8-12S4 8.5 4 14a8 8 0 0 0 8 8z"/>
+                      <path d="M12 10a4 4 0 0 1 4 4" stroke="var(--gold-icon)" stroke-width="2.5"/>
+                    </svg>
+                  </div>
+                </div>
+                <h3 class="feature-title">Eco Tracker</h3>
+                <p class="feature-description">Offset carbon footprints and support green matches automatically.</p>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Stacked Card 3: Technology Stack Orbit -->
+        <div class="stacked-card">
+          <div class="stacked-content">
+            <!-- Orbit Feature Section -->
+            <div class="orbit-feature-section" style="border-radius:24px; border:1px solid rgba(255,255,255,0.08); overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,0.5)">
+              <!-- Left: copy -->
+              <div class="orbit-copy">
+                <div class="orbit-eyebrow">
+                  <div class="pulse-dot" aria-hidden="true"></div>
+                  Powered by PULSE AI
+                </div>
+                <h2 class="orbit-heading">
+                  AI that works<br><span class="accent">when nothing else does</span>
+                </h2>
+                <p class="orbit-desc">
+                  PULSE combines offline-first edge AI, BLE mesh networking, real-time crowd intelligence,
+                  and multilingual NLP — all running locally on your device. No signal required.
+                </p>
+                <div class="orbit-cta">
+                  <button class="btn btn-primary" onclick="document.querySelector('[data-page=chat]').click()" style="cursor:pointer">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M13 2L4.5 13.5H11L9 22l10.5-12H13V2z"/></svg>
+                    Try AI Chat
+                  </button>
+                  <button class="btn btn-ghost" onclick="document.querySelector('[data-page=crowd]').click()" style="cursor:pointer">
+                    View Crowd Map
+                  </button>
+                </div>
+                <!-- Tech chips -->
+                <div class="tech-chips">
+                  <span class="tech-chip">Edge AI</span>
+                  <span class="tech-chip">BLE Mesh</span>
+                  <span class="tech-chip">Offline-first</span>
+                  <span class="tech-chip">50+ Languages</span>
+                  <span class="tech-chip">WCAG AA</span>
+                </div>
+              </div>
+
+              <!-- Right: orbit animation (overflow-cropped) -->
+              <div class="orbit-stage-wrapper" aria-hidden="true">
+                <div class="orbit-stage" id="orbit-stage">
+                  <!-- Center node -->
+                  <div class="orbit-center" style="overflow:hidden">
+                    <img src="images/soccer-ball.jpg" alt="PULSE FIFA World Cup 2026 Logo" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />
+                  </div>
+                  <!-- Rings injected by JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════
+       PAGE: AI CHAT
+  ═══════════════════════════════════════ -->
+    <section id="page-chat" class="page" role="tabpanel" aria-labelledby="tab-chat" style="position:relative">
+      
+      <!-- Dotted Background Grid for AI Chat -->
+      <div class="chat-bg-grid" aria-hidden="true"></div>
+
+      <!-- Large 3D Orbiting Background Animation -->
+      <div class="chat-bg-orbit-scene" id="chat-bg-orbit-scene" aria-hidden="true">
+        <div class="chat-bg-orbit-ring"></div>
+        <div class="chat-bg-orbit-items" id="chat-bg-orbit-items">
+          <!-- Orbiting icons will be dynamically injected by JS -->
+        </div>
+        <div class="chat-bg-orbit-center">
+          <img src="images/world_cup_trophy.png" alt="FIFA World Cup Trophy" style="width: 100%; height: 100%; object-fit: contain; padding: 12px;" />
+        </div>
+      </div>
+
+      <div class="section-header">
+        <h1 class="section-title">PULSE <span class="accent">AI Chat</span></h1>
+        <p class="section-sub">Multilingual AI companion · Fully offline · 50+ languages · All answers pre-loaded on
+          device</p>
+      </div>
+      <div class="chat-layout">
+        <div class="chat-window" role="region" aria-label="AI Chat conversation">
+          <div class="chat-header">
+            <!-- Simple Avatar (restored matching screenshot) -->
+            <div class="chat-avatar" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M13 2L4.5 13.5H11L9 22l10.5-12H13V2z" />
+              </svg>
+            </div>
+            <div>
+              <div style="font-weight:700; font-size:0.95rem">PULSE AI Companion</div>
+              <div class="chat-status">
+                <div class="pulse-dot" aria-hidden="true"></div>Online · Offline-Ready · 50 Languages
+              </div>
+            </div>
+            <div style="margin-left:auto; display:flex; gap:var(--space-2)">
+              <span class="badge badge-low">OFFLINE-READY</span>
+              <span class="badge badge-blue">GPT-EDGE</span>
+            </div>
+          </div>
+          <div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-label="Chat messages">
+            <div class="ui-marker ui-marker-separator" aria-hidden="true">
+              <div class="ui-marker-content">CONVERSATION START · TODAY</div>
+            </div>
+            <div class="message ai">
+              <div class="msg-avatar ai" aria-hidden="true">AI</div>
+              <div class="msg-bubble">
+                Welcome to <strong>PULSE</strong> — your FIFA World Cup 2026 AI Safety Companion.<br><br>
+                I can help with:<br>
+                · <strong>Navigation</strong> — gates, seats, facilities<br>
+                · <strong>Heat safety</strong> — personal risk alerts<br>
+                · <strong>Group tracking</strong> — locate your group<br>
+                · <strong>Transport</strong> — AI-optimized departures<br>
+                · <strong>Translation</strong> — 50+ languages offline<br>
+                · <strong>Tickets</strong> — access issues resolved<br><br>
+                <em>Works completely offline</em> — even in dead zones. What do you need?
+              </div>
+            </div>
+          </div>
+          <div class="chat-input-area">
+            <textarea id="chat-input" class="chat-input"
+              placeholder="Ask anything… English, Español, Français, 中文, हिन्दी, العربية…" rows="1"
+              aria-label="Type your message"></textarea>
+            <button id="chat-send" class="chat-send-btn" aria-label="Send message">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <line x1="22" y1="2" x2="11" y2="13" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="chat-sidebar">
+          <div class="card">
+            <div class="card-title">Quick Prompts</div>
+            <div style="display:flex; flex-direction:column; gap:var(--space-1)">
+              <button class="quick-prompt" data-prompt="Where is the nearest exit gate?">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                Nearest uncrowded exit
+              </button>
+              <button class="quick-prompt" data-prompt="I feel dizzy from the heat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z" />
+                </svg>
+                I feel dizzy from heat
+              </button>
+              <button class="quick-prompt" data-prompt="I lost my child">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                I lost my child
+              </button>
+              <button class="quick-prompt" data-prompt="When is the next shuttle?">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <rect x="1" y="3" width="15" height="13" />
+                  <path d="M16 8h4l3 3v5h-7V8z" />
+                  <circle cx="5.5" cy="18.5" r="2.5" />
+                  <circle cx="18.5" cy="18.5" r="2.5" />
+                </svg>
+                Next shuttle times
+              </button>
+              <button class="quick-prompt" data-prompt="My ticket QR code is not showing">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <rect x="3" y="3" width="7" height="7" />
+                  <rect x="14" y="3" width="7" height="7" />
+                  <rect x="3" y="14" width="7" height="7" />
+                  <path d="M14 14h.01M14 17h3M17 14v3M21 14v.01M21 17v3M17 21h4" />
+                </svg>
+                Ticket not loading
+              </button>
+              <button class="quick-prompt" data-prompt="Where can I find food with short queue?">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M18 8h1a4 4 0 010 8h-1" />
+                  <path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z" />
+                  <line x1="6" y1="1" x2="6" y2="4" />
+                  <line x1="10" y1="1" x2="10" y2="4" />
+                  <line x1="14" y1="1" x2="14" y2="4" />
+                </svg>
+                Food with short queue
+              </button>
+              <button class="quick-prompt" data-prompt="The wifi is not working">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                  <path
+                    d="M16.72 11.06A10.94 10.94 0 0119 12.55M5 12.55a10.94 10.94 0 015.17-2.39M10.71 5.05A16 16 0 0122.56 9M1.42 9a15.91 15.91 0 014.7-2.88M8.53 16.11a6 6 0 016.95 0M12 20h.01" />
+                </svg>
+                No wifi / offline help
+              </button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Chat Language</div>
+            <div class="lang-grid">
+              <button class="lang-btn active" data-lang="en" data-flag="🇬🇧" data-name="English">🇬🇧 EN</button>
+              <button class="lang-btn" data-lang="es" data-flag="🇪🇸" data-name="Español">🇪🇸 ES</button>
+              <button class="lang-btn" data-lang="fr" data-flag="🇫🇷" data-name="Français">🇫🇷 FR</button>
+              <button class="lang-btn" data-lang="pt" data-flag="🇧🇷" data-name="Português">🇧🇷 PT</button>
+              <button class="lang-btn" data-lang="de" data-flag="🇩🇪" data-name="Deutsch">🇩🇪 DE</button>
+              <button class="lang-btn" data-lang="ar" data-flag="🇸🇦" data-name="العربية">🇸🇦 AR</button>
+              <button class="lang-btn" data-lang="zh" data-flag="🇨🇳" data-name="中文">🇨🇳 ZH</button>
+              <button class="lang-btn" data-lang="hi" data-flag="🇮🇳" data-name="हिन्दी">🇮🇳 HI</button>
+              <button class="lang-btn" data-lang="ja" data-flag="🇯🇵" data-name="日本語">🇯🇵 JA</button>
+            </div>
+          </div>
+          <div class="card" style="background:var(--red-surface); border-color:rgba(239,68,68,0.25)">
+            <div style="font-weight:700; color:var(--red-bright); margin-bottom:var(--space-2); font-size:0.88rem">
+              Emergency</div>
+            <p style="font-size:0.78rem; color:var(--fg-secondary); margin-bottom:var(--space-3); line-height:1.5">
+              Life-threatening? Call 911 immediately. PULSE generates emergency cards in any language.</p>
+            <button class="btn btn-danger btn-sm w-full" style="cursor:pointer"
+              onclick="document.querySelector('[data-page=translate]').click()">Emergency Translator</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════
+       PAGE: CROWD MAP
+  ═══════════════════════════════════════ -->
+    <section id="page-crowd" class="page" role="tabpanel">
+      <div class="section-header">
+        <h1 class="section-title">Crowd <span class="accent">Pulse Map</span></h1>
+        <p class="section-sub">Real-time crowd density · AI predicts surges 30 min ahead · Fan-visible for the first
+          time</p>
+      </div>
+      <div class="crowd-layout">
+        <div>
+          <div class="card" style="padding:0; overflow:hidden; margin-bottom:var(--space-4)">
+            <canvas id="crowd-canvas" style="width:100%; height:440px; display:block" role="img"
+              aria-label="Live crowd density heatmap of MetLife Stadium"></canvas>
+          </div>
+          <div class="grid-3">
+            <div class="kpi-card red">
+              <div class="kpi-label">Critical Zones</div>
+              <div class="kpi-value">2</div>
+              <div class="kpi-change" style="color:var(--red-bright)">Gate A + Parking P1</div>
+            </div>
+            <div class="kpi-card orange">
+              <div class="kpi-label">AI Rerouting</div>
+              <div class="kpi-value">Active</div>
+              <div class="kpi-change" style="color:var(--orange-bright)">4,200 fans redirected</div>
+            </div>
+            <div class="kpi-card green">
+              <div class="kpi-label">Safest Exit</div>
+              <div class="kpi-value" style="font-size:1.5rem">Gate D</div>
+              <div class="kpi-change" style="color:var(--green-bright)">22% density · 5 min</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:var(--space-4)">
+          <div class="card">
+            <div class="card-title">Zone Status</div>
+            <div id="zone-list" style="display:flex; flex-direction:column; gap:var(--space-2)"></div>
+          </div>
+          <div class="card" style="background:var(--gold-surface); border-color:rgba(245,158,11,0.22)">
+            <div style="font-weight:700; color:var(--gold-bright); margin-bottom:var(--space-2); font-size:0.88rem">AI
+              Prediction — Next 30 min</div>
+            <p style="font-size:0.8rem; color:var(--fg-secondary); line-height:1.6">Match ends in ~12 minutes. AI
+              forecasts a <strong style="color:var(--red-bright)">major post-match exodus</strong> via Gate
+              A.<br><br><strong style="color:var(--gold-bright)">Recommended:</strong> Leave at minute 85 via Gate D or
+              C for 60% faster exit.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════
+       PAGE: HEAT RISK
+  ═══════════════════════════════════════ -->
+    <section id="page-heat" class="page" role="tabpanel">
+      <div class="section-header">
+        <h1 class="section-title">Heat Risk <span class="accent">Monitor</span></h1>
+        <p class="section-sub">Personal AI heat index · 100+ incidents in Houston Fan Festival · PULSE warns you 20 min
+          early</p>
+      </div>
+      <div class="grid-2 mb-4" style="align-items:start">
+        <div class="card">
+          <div class="card-title">Your Personal Heat Risk</div>
+          <div style="display:flex; flex-direction:column; align-items:center; padding:var(--space-3) 0">
+            <canvas id="heat-gauge-canvas" width="260" height="160" style="display:block" role="img"
+              aria-label="Heat risk gauge"></canvas>
+            <div style="text-align:center; margin-top:var(--space-3)">
+              <div style="font-family:var(--font-display); font-size:1.8rem; font-weight:400" id="heat-risk-level">–
+              </div>
+              <p style="font-size:0.82rem; color:var(--fg-secondary); margin-top:var(--space-2); max-width:280px; line-height:1.5"
+                id="heat-advice">Calculating…</p>
+            </div>
+          </div>
+          <div class="sep"></div>
+          <dl style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:var(--space-3); text-align:center">
+            <div>
+              <dt
+                style="font-family:var(--font-mono); font-size:0.62rem; text-transform:uppercase; letter-spacing:0.10em; color:var(--fg-muted); margin-bottom:3px">
+                Ambient</dt>
+              <dd
+                style="font-family:var(--font-display); font-weight:400; font-size:1.15rem; color:var(--orange-bright)"
+                id="heat-temp">–</dd>
+            </div>
+            <div>
+              <dt
+                style="font-family:var(--font-mono); font-size:0.62rem; text-transform:uppercase; letter-spacing:0.10em; color:var(--fg-muted); margin-bottom:3px">
+                Feels Like</dt>
+              <dd style="font-family:var(--font-display); font-weight:400; font-size:1.15rem; color:var(--red-bright)"
+                id="heat-feels">–</dd>
+            </div>
+            <div>
+              <dt
+                style="font-family:var(--font-mono); font-size:0.62rem; text-transform:uppercase; letter-spacing:0.10em; color:var(--fg-muted); margin-bottom:3px">
+                Humidity</dt>
+              <dd style="font-family:var(--font-display); font-weight:400; font-size:1.15rem; color:var(--blue-bright)"
+                id="heat-humidity">–</dd>
+            </div>
+          </dl>
+          <div class="sep"></div>
+          <div
+            style="font-family:var(--font-mono); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.10em; color:var(--fg-muted); margin-bottom:var(--space-3)">
+            Personal risk meter</div>
+          <div class="risk-meter" role="meter" aria-label="Personal heat risk level">
+            <div class="risk-needle" id="heat-needle" style="left:50%"></div>
+          </div>
+          <div
+            style="display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:0.62rem; color:var(--fg-muted); margin-top:var(--space-1)">
+            <span>LOW</span><span>MODERATE</span><span>HIGH</span><span>CRITICAL</span></div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:var(--space-4)">
+          <div class="card">
+            <div class="card-title">Heat Risk Scale</div>
+            <div class="heat-scale">
+              <div class="heat-scale-item" style="background:var(--green-surface); border-radius:var(--radius-md)">
+                <div class="heat-scale-dot" style="background:var(--green)"></div>
+                <div>
+                  <div style="font-weight:600; font-size:0.82rem; color:var(--green-bright)">LOW (&lt;95°F)</div>
+                  <div style="font-size:0.72rem; color:var(--fg-secondary)">Stay hydrated. Enjoy the match.</div>
+                </div>
+              </div>
+              <div class="heat-scale-item" style="background:rgba(245,158,11,0.08); border-radius:var(--radius-md)">
+                <div class="heat-scale-dot" style="background:var(--gold)"></div>
+                <div>
+                  <div style="font-weight:600; font-size:0.82rem; color:var(--gold-bright)">MODERATE (95–108°F)</div>
+                  <div style="font-size:0.72rem; color:var(--fg-secondary)">Drink water every 20 min. Seek shade.</div>
+                </div>
+              </div>
+              <div class="heat-scale-item" style="background:var(--orange-surface); border-radius:var(--radius-md)">
+                <div class="heat-scale-dot" style="background:var(--orange)"></div>
+                <div>
+                  <div style="font-weight:600; font-size:0.82rem; color:var(--orange-bright)">HIGH (108–120°F)</div>
+                  <div style="font-size:0.72rem; color:var(--fg-secondary)">Move to cooling zone within 10 min.</div>
+                </div>
+              </div>
+              <div class="heat-scale-item" style="background:var(--red-surface); border-radius:var(--radius-md)">
+                <div class="heat-scale-dot" style="background:var(--red)"></div>
+                <div>
+                  <div style="font-weight:600; font-size:0.82rem; color:var(--red-bright)">CRITICAL (&gt;120°F)</div>
+                  <div style="font-size:0.72rem; color:var(--fg-secondary)">Seek immediate medical attention.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Nearest Cooling Stations</div>
+            <div style="display:flex; flex-direction:column; gap:var(--space-2)">
+              <div class="cooling-station" tabindex="0" role="button" aria-label="Cooling Zone B - 200m away">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue-bright)"
+                  stroke-width="1.8" aria-hidden="true">
+                  <path
+                    d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+                </svg>
+                <div>
+                  <div style="font-weight:600; font-size:0.82rem">Cooling Zone B</div>
+                  <div style="font-size:0.72rem; color:var(--fg-secondary)">South Concourse · Misting + water</div>
+                </div>
+                <span class="cooling-distance">200m</span>
+              </div>
+              <div class="cooling-station" tabindex="0" role="button" aria-label="Medical Tent 3 - 350m away">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--red-bright)"
+                  stroke-width="1.8" aria-hidden="true">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                </svg>
+                <div>
+                  <div style="font-weight:600; font-size:0.82rem">Medical Tent 3</div>
+                  <div style="font-size:0.72rem; color:var(--fg-secondary)">Gate B · IV hydration available</div>
+                </div>
+                <span class="cooling-distance">350m</span>
+              </div>
+              <div class="cooling-station" tabindex="0" role="button" aria-label="Hydration Hub - 80m away">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cyan-bright)"
+                  stroke-width="1.8" aria-hidden="true">
+                  <path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z" />
+                </svg>
+                <div>
+                  <div style="font-weight:600; font-size:0.82rem">Hydration Hub</div>
+                  <div style="font-size:0.72rem; color:var(--fg-secondary)">Every concourse · Free water</div>
+                </div>
+                <span class="cooling-distance">80m</span>
+              </div>
+              <div class="cooling-station" tabindex="0" role="button" aria-label="AC Lounge - 520m away">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--purple-bright)"
+                  stroke-width="1.8" aria-hidden="true">
+                  <rect x="2" y="7" width="20" height="14" rx="2" />
+                  <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />
+                </svg>
+                <div>
+                  <div style="font-weight:600; font-size:0.82rem">Air-Conditioned Lounge</div>
+                  <div style="font-size:0.72rem; color:var(--fg-secondary)">Level 2, Section A · Open to all</div>
+                </div>
+                <span class="cooling-distance">520m</span>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="background:var(--red-surface); border-color:rgba(239,68,68,0.22)">
+            <div style="font-weight:700; color:var(--red-bright); margin-bottom:var(--space-2); font-size:0.88rem">Real
+              Event Data</div>
+            <p style="font-size:0.78rem; color:var(--fg-secondary); line-height:1.55">On Day 1 of FIFA 2026, the Houston
+              Fan Festival reported <strong style="color:var(--red-bright)">100+ heat-related medical incidents in a
+                single day</strong>. PULSE would have alerted fans 20 minutes before reaching critical temperature.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════
+       PAGE: GROUP SAFETY
+  ═══════════════════════════════════════ -->
+    <section id="page-group" class="page" role="tabpanel">
+      <div class="section-header">
+        <h1 class="section-title">Group <span class="accent">Safety Net</span></h1>
+        <p class="section-sub">AI group tracking with BLE mesh · Locate anyone in seconds · No internet required</p>
+      </div>
+      <div class="grid-2 mb-4" style="align-items:start">
+        <div>
+          <div class="flex justify-between items-center mb-3">
+            <div class="card-title" style="margin:0">Your Group (4 members)</div>
+            <button class="btn btn-ghost btn-sm" style="cursor:pointer">+ Add Member</button>
+          </div>
+          <div id="group-members" style="display:flex; flex-direction:column; gap:var(--space-3)"></div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:var(--space-4)">
+          <div class="card" style="background:var(--red-surface); border-color:rgba(239,68,68,0.25)">
+            <div style="font-weight:700; color:var(--red-bright); margin-bottom:var(--space-1); font-size:0.95rem">Group
+              Member Missing?</div>
+            <p style="font-size:0.8rem; color:var(--fg-secondary); margin-bottom:var(--space-4); line-height:1.5">Mei
+              hasn't been seen for <strong style="color:var(--orange-bright)">8 minutes</strong> in the Food Court (High
+              heat zone). Activate the BLE emergency beacon — no internet needed.</p>
+            <button class="sos-big-btn" id="sos-btn" aria-label="Activate emergency BLE beacon to locate Mei">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
+                aria-hidden="true">
+                <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+              </svg>
+              ACTIVATE EMERGENCY BEACON
+            </button>
+            <div class="ble-progress mt-3" id="ble-progress" aria-live="polite">
+              <div
+                style="display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:0.62rem; font-weight:700; color:var(--fg-muted); text-transform:uppercase; letter-spacing:0.10em; margin-bottom:var(--space-2)">
+                <span>BLE Mesh Progress</span>
+                <span class="badge badge-low" style="background:rgba(234,179,8,0.18); color:#EAB308; border:1px solid rgba(234,179,8,0.3)">SIMULATION</span>
+              </div>
+              <div class="progress-bar mb-3">
+                <div class="progress-fill" id="ble-prog-fill"
+                  style="width:0%; background:linear-gradient(90deg, var(--blue), var(--green))"></div>
+              </div>
+              <div id="ble-steps"
+                style="display:flex; flex-direction:column; gap:var(--space-1); max-height:140px; overflow-y:auto">
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">How PULSE Group Safety Works</div>
+            <div style="display:flex; flex-direction:column; gap:var(--space-4); margin-top:var(--space-2)">
+              <div style="display:flex; gap:var(--space-3); align-items:flex-start">
+                <div
+                  style="width:28px; height:28px; border-radius:50%; background:var(--gold-surface); border:1px solid rgba(245,158,11,0.3); display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-weight:700; font-size:0.72rem; color:var(--gold-bright); flex-shrink:0">
+                  1</div>
+                <div>
+                  <div style="font-weight:600; font-size:0.85rem; margin-bottom:2px">Pre-match group registration</div>
+                  <div style="font-size:0.75rem; color:var(--fg-secondary)">Add names, languages, health conditions. 60
+                    seconds.</div>
+                </div>
+              </div>
+              <div style="display:flex; gap:var(--space-3); align-items:flex-start">
+                <div
+                  style="width:28px; height:28px; border-radius:50%; background:var(--blue-surface); border:1px solid rgba(59,130,246,0.3); display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-weight:700; font-size:0.72rem; color:var(--blue-bright); flex-shrink:0">
+                  2</div>
+                <div>
+                  <div style="font-weight:600; font-size:0.85rem; margin-bottom:2px">AI monitors continuously</div>
+                  <div style="font-size:0.75rem; color:var(--fg-secondary)">Watches inactivity, heat spikes, location
+                    separation — all offline via BLE.</div>
+                </div>
+              </div>
+              <div style="display:flex; gap:var(--space-3); align-items:flex-start">
+                <div
+                  style="width:28px; height:28px; border-radius:50%; background:var(--red-surface); border:1px solid rgba(239,68,68,0.3); display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-weight:700; font-size:0.72rem; color:var(--red-bright); flex-shrink:0">
+                  3</div>
+                <div>
+                  <div style="font-weight:600; font-size:0.85rem; margin-bottom:2px">Alert before crisis</div>
+                  <div style="font-size:0.75rem; color:var(--fg-secondary)">Proactive warning 5+ minutes before heat
+                    stress or separation.</div>
+                </div>
+              </div>
+              <div style="display:flex; gap:var(--space-3); align-items:flex-start">
+                <div
+                  style="width:28px; height:28px; border-radius:50%; background:var(--green-surface); border:1px solid rgba(34,197,94,0.3); display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-weight:700; font-size:0.72rem; color:var(--green-bright); flex-shrink:0">
+                  4</div>
+                <div>
+                  <div style="font-weight:600; font-size:0.85rem; margin-bottom:2px">BLE mesh location</div>
+                  <div style="font-size:0.75rem; color:var(--fg-secondary)">1,200+ nearby phones relay the signal —
+                    staff pinged with exact location in ~5 seconds.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════
+       PAGE: NAVIGATION
+  ═══════════════════════════════════════ -->
+    <section id="page-nav" class="page" role="tabpanel">
+      <div class="section-header">
+        <h1 class="section-title">Smart <span class="accent">Navigation</span></h1>
+        <p class="section-sub">AI-optimized routing · Live congestion awareness · Accessibility routes · Offline-capable
+        </p>
+      </div>
+      <div class="grid-2 mb-4" style="align-items:start">
+        <div>
+          <div class="card" style="padding:0; overflow:hidden; margin-bottom:var(--space-4)">
+            <canvas id="nav-canvas" style="width:100%; height:340px; display:block" role="img"
+              aria-label="Stadium navigation map with route overlay"></canvas>
+          </div>
+          <div class="flex gap-2 mb-3">
+            <button class="btn btn-ghost btn-sm" style="cursor:pointer" onclick="toggleAccessibility()">Accessibility
+              Mode</button>
+            <button class="btn btn-primary btn-sm" style="cursor:pointer" onclick="selectRoute('ai_optimized')">Use AI
+              Route</button>
+          </div>
+        </div>
+        <div>
+          <div class="card mb-4">
+            <div class="card-title">Choose Route</div>
+            <div id="route-options"
+              style="display:flex; flex-direction:column; gap:var(--space-2); margin-bottom:var(--space-4)"></div>
+          </div>
+          <div class="card" id="route-steps"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Find Any Location</div>
+        <div class="grid-4">
+          <button class="btn btn-ghost" style="justify-content:flex-start; cursor:pointer"
+            onclick="triggerToast('Route to Gate D: 5 min via South Concourse — 22% density', 'success')">Gate D (Least
+            Crowded)</button>
+          <button class="btn btn-ghost" style="justify-content:flex-start; cursor:pointer"
+            onclick="triggerToast('Nearest accessible restroom: Level 2, Section B — 3 min', 'info')">Nearest
+            Restroom</button>
+          <button class="btn btn-ghost" style="justify-content:flex-start; cursor:pointer"
+            onclick="triggerToast('Medical Tent 3 at Gate B — 350m, 4 min walk', 'info')">Medical Tent</button>
+          <button class="btn btn-ghost" style="justify-content:flex-start; cursor:pointer"
+            onclick="triggerToast('Hydration Hub: 80m, Concourse S — free water', 'info')">Water Station</button>
+          <button class="btn btn-ghost" style="justify-content:flex-start; cursor:pointer"
+            onclick="triggerToast('Your seat: Section 114, Row 8 — Elevator B to Level 3', 'info')">My Seat
+            (114-R8)</button>
+          <button class="btn btn-ghost" style="justify-content:flex-start; cursor:pointer"
+            onclick="triggerToast('Express Shuttle A departs Gate C — 200m, 3 min walk', 'success')">Shuttle
+            Stop</button>
+          <button class="btn btn-ghost" style="justify-content:flex-start; cursor:pointer"
+            onclick="triggerToast('Cooling Zone B: South Concourse — 200m, 3 min walk', 'info')">Cooling Zone</button>
+          <button class="btn btn-ghost" style="justify-content:flex-start; cursor:pointer"
+            onclick="triggerToast('Ticket Resolution Point: Gate C, Ground Level — 180m', 'info')">Ticket Help
+            Point</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════
+       PAGE: TRANSPORT
+  ═══════════════════════════════════════ -->
+    <section id="page-transport" class="page" role="tabpanel">
+      <div class="section-header">
+        <h1 class="section-title">Smart <span class="accent">Transport</span></h1>
+        <p class="section-sub">AI-optimized departure times · Real-time status · Carbon footprint per mode</p>
+      </div>
+      <div class="card mb-4" style="background:var(--gold-surface); border-color:rgba(245,158,11,0.22)">
+        <div style="display:flex; align-items:flex-start; gap:var(--space-4)">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gold-bright)" stroke-width="1.8"
+            flex-shrink="0" aria-hidden="true">
+            <path
+              d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7h1a1 1 0 010 2h-1v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1H2a1 1 0 010-2h1a7 7 0 017-7h1V5.73A2 2 0 0110 4a2 2 0 012-2z" />
+          </svg>
+          <div>
+            <div style="font-weight:700; color:var(--gold-bright); margin-bottom:var(--space-1)">AI Departure
+              Recommendation</div>
+            <p style="font-size:0.85rem; color:var(--fg-secondary)">Match ends in ~12 minutes. <strong
+                style="color:var(--gold-bright)">Leave NOW via Gate C (Shuttle Express A)</strong> to beat the
+              40,000-fan post-match surge. If staying, wait 25+ minutes. Gate A will reach 95%+ at full-time.</p>
+          </div>
+        </div>
+      </div>
+      <div class="grid-auto mb-4" id="transport-cards"></div>
+      <div class="card">
+        <div class="card-title">Green Transport Impact</div>
+        <div class="grid-3">
+          <div style="text-align:center; padding:var(--space-5)">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--blue-bright)" stroke-width="1.8"
+              style="margin-bottom:var(--space-2)" aria-hidden="true">
+              <rect x="3" y="11" width="18" height="10" rx="2" />
+              <path d="M3 16h18M7 11V7c0-2.2 1.8-4 4-4s4 1.8 4 4v4" />
+            </svg>
+            <div style="font-family:var(--font-display); font-size:1.4rem; color:var(--green-bright)">0.3 kg</div>
+            <div
+              style="font-family:var(--font-mono); font-size:0.65rem; color:var(--fg-muted); text-transform:uppercase; letter-spacing:0.08em; margin-top:3px">
+              CO₂ via Metro</div>
+          </div>
+          <div style="text-align:center; padding:var(--space-5)">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--red-bright)" stroke-width="1.8"
+              style="margin-bottom:var(--space-2)" aria-hidden="true">
+              <path
+                d="M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h11a2 2 0 012 2v3M13 17h8a2 2 0 002-2v-4a2 2 0 00-2-2h-8a2 2 0 00-2 2v4a2 2 0 002 2M13 17l2 3M17 17l-2 3M8 20l-3-3h3" />
+            </svg>
+            <div style="font-family:var(--font-display); font-size:1.4rem; color:var(--red-bright)">2.1 kg</div>
+            <div
+              style="font-family:var(--font-mono); font-size:0.65rem; color:var(--fg-muted); text-transform:uppercase; letter-spacing:0.08em; margin-top:3px">
+              CO₂ via Solo Drive</div>
+          </div>
+          <div style="text-align:center; padding:var(--space-5)">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.8"
+              style="margin-bottom:var(--space-2)" aria-hidden="true">
+              <circle cx="18.5" cy="17.5" r="3.5" />
+              <circle cx="5.5" cy="17.5" r="3.5" />
+              <circle cx="15" cy="5" r="1" />
+              <path d="M12 17.5V14l-3-3 4-3 2 3h2" />
+            </svg>
+            <div style="font-family:var(--font-display); font-size:1.4rem; color:var(--green-bright)">0.0 kg</div>
+            <div
+              style="font-family:var(--font-mono); font-size:0.65rem; color:var(--fg-muted); text-transform:uppercase; letter-spacing:0.08em; margin-top:3px">
+              CO₂ via Bike Share</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════
+       PAGE: SUSTAINABILITY
+  ═══════════════════════════════════════ -->
+    <section id="page-sustain" class="page" role="tabpanel">
+      <div class="section-header">
+        <h1 class="section-title">Sustainability <span class="accent">Dashboard</span></h1>
+        <p class="section-sub">Real-time environmental impact · AI eco tips · FIFA 2026 Green Goals</p>
+      </div>
+      <div class="grid-4 mb-4">
+        <div class="kpi-card green stagger-child">
+          <div class="kpi-label">Carbon Today</div>
+          <div class="kpi-value" style="font-size:1.8rem">4,820</div>
+          <div class="kpi-change" style="color:var(--green-bright)">19% below target</div>
+        </div>
+        <div class="kpi-card blue stagger-child">
+          <div class="kpi-label">Water Saved</div>
+          <div class="kpi-value" id="sustain-water" style="font-size:1.5rem">–</div>
+          <div class="kpi-change" style="color:var(--blue-bright)">vs. standard ops</div>
+        </div>
+        <div class="kpi-card gold stagger-child">
+          <div class="kpi-label">Waste Recycled</div>
+          <div class="kpi-value" style="font-size:2rem">73%</div>
+          <div class="kpi-change" style="color:var(--gold-bright)">Target: 80%</div>
+        </div>
+        <div class="kpi-card purple stagger-child">
+          <div class="kpi-label">Trees Offset</div>
+          <div class="kpi-value" id="sustain-trees" style="font-size:1.8rem">–</div>
+          <div class="kpi-change" style="color:var(--purple-bright)">this tournament</div>
+        </div>
+      </div>
+      <div class="grid-2 mb-4" style="align-items:start">
+        <div class="card">
+          <div class="card-title">Green Goals Progress</div>
+          <div style="margin-top:var(--space-2)">
+            <div class="sustainability-bar">
+              <div class="s-bar-header"><span>Carbon Emissions</span><span class="s-bar-value">4,820 / 6,000 kg</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" id="sustain-carbon" style="width:0%"></div>
+              </div>
+            </div>
+            <div class="sustainability-bar">
+              <div class="s-bar-header"><span>Waste Recycling</span><span class="s-bar-value">73%</span></div>
+              <div class="progress-bar">
+                <div class="progress-fill" id="sustain-waste" style="width:0%"></div>
+              </div>
+            </div>
+            <div class="sustainability-bar">
+              <div class="s-bar-header"><span>Renewable Energy</span><span class="s-bar-value">84%</span></div>
+              <div class="progress-bar">
+                <div class="progress-fill" id="sustain-energy" style="width:0%"></div>
+              </div>
+            </div>
+            <div class="sustainability-bar">
+              <div class="s-bar-header"><span>Green Transport Trips</span><span class="s-bar-value">62%</span></div>
+              <div class="progress-bar">
+                <div class="progress-fill" id="sustain-transport" style="width:0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">AI Eco Tips for You</div>
+          <div id="eco-tips"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════
+       PAGE: OPS INTELLIGENCE
+  ═══════════════════════════════════════ -->
+    <section id="page-ops" class="page" role="tabpanel">
+      <div class="section-header">
+        <h1 class="section-title">Ops <span class="accent">Intelligence</span></h1>
+        <p class="section-sub">AI incident triage · Urgency scoring · Smart volunteer dispatch · Decision support</p>
+      </div>
+      <div class="grid-4 mb-4">
+        <div class="kpi-card red stagger-child">
+          <div class="kpi-label">Active Incidents</div>
+          <div class="kpi-value">2</div>
+          <div class="kpi-change" style="color:var(--red-bright)">Immediate action</div>
+        </div>
+        <div class="kpi-card orange stagger-child">
+          <div class="kpi-label">Volunteers Deployed</div>
+          <div class="kpi-value">847</div>
+          <div class="kpi-change" style="color:var(--orange-bright)">of 1,200 on-shift</div>
+        </div>
+        <div class="kpi-card blue stagger-child">
+          <div class="kpi-label">AI Actions Today</div>
+          <div class="kpi-value">134</div>
+          <div class="kpi-change" style="color:var(--blue-bright)">Automated decisions</div>
+        </div>
+        <div class="kpi-card green stagger-child">
+          <div class="kpi-label">Resolved Today</div>
+          <div class="kpi-value">61</div>
+          <div class="kpi-change" style="color:var(--green-bright)">Avg. 8 min resolve</div>
+        </div>
+      </div>
+      <div class="grid-2" style="align-items:start">
+        <div>
+          <div class="flex justify-between items-center mb-3">
+            <div class="card-title" style="margin:0">Incident Log — AI Triaged</div>
+            <div style="display:flex; gap:var(--space-2)">
+              <button class="btn btn-ghost btn-sm" style="cursor:pointer">Critical First</button>
+              <button class="btn btn-primary btn-sm" style="cursor:pointer">+ New Incident</button>
+            </div>
+          </div>
+          <div id="incident-list" aria-live="polite"></div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:var(--space-4)">
+          <!-- Custom Shadcn Tabs Demo -->
+          <div class="card ui-tabs-container">
+            <div class="card-title mb-3">System Reports & Settings</div>
+            
+            <div class="ui-tabs" data-default="overview">
+              <div class="ui-tabs-list" role="tablist">
+                <button class="ui-tabs-trigger active" data-value="overview" role="tab" aria-selected="true">Overview</button>
+                <button class="ui-tabs-trigger" data-value="analytics" role="tab" aria-selected="false">Analytics</button>
+                <button class="ui-tabs-trigger" data-value="reports" role="tab" aria-selected="false">Reports</button>
+                <button class="ui-tabs-trigger" data-value="settings" role="tab" aria-selected="false">Settings</button>
+              </div>
+              
+              <div class="ui-tabs-content active" data-value="overview" role="tabpanel">
+                <div class="ui-tab-card">
+                  <div class="ui-tab-card-header">
+                    <h4 class="ui-tab-card-title">Overview</h4>
+                    <p class="ui-tab-card-description">
+                      View your key metrics and recent project activity. Track progress
+                      across all your active projects.
+                    </p>
+                  </div>
+                  <div class="ui-tab-card-content text-sm text-muted">
+                    You have 12 active projects and 3 pending tasks.
+                  </div>
+                </div>
+              </div>
+              
+              <div class="ui-tabs-content" data-value="analytics" role="tabpanel">
+                <div class="ui-tab-card">
+                  <div class="ui-tab-card-header">
+                    <h4 class="ui-tab-card-title">Analytics</h4>
+                    <p class="ui-tab-card-description">
+                      Track performance and user engagement metrics. Monitor trends and
+                      identify growth opportunities.
+                    </p>
+                  </div>
+                  <div class="ui-tab-card-content text-sm text-muted">
+                    Page views are up 25% compared to last month.
+                  </div>
+                </div>
+              </div>
+              
+              <div class="ui-tabs-content" data-value="reports" role="tabpanel">
+                <div class="ui-tab-card">
+                  <div class="ui-tab-card-header">
+                    <h4 class="ui-tab-card-title">Reports</h4>
+                    <p class="ui-tab-card-description">
+                      Generate and download your detailed reports. Export data in
+                      multiple formats for analysis.
+                    </p>
+                  </div>
+                  <div class="ui-tab-card-content text-sm text-muted">
+                    You have 5 reports ready and available to export.
+                  </div>
+                </div>
+              </div>
+              
+              <div class="ui-tabs-content" data-value="settings" role="tabpanel">
+                <div class="ui-tab-card">
+                  <div class="ui-tab-card-header">
+                    <h4 class="ui-tab-card-title">Settings</h4>
+                    <p class="ui-tab-card-description">
+                      Manage your account preferences and options. Customize your
+                      experience to fit your needs.
+                    </p>
+                  </div>
+                  <div class="ui-tab-card-content text-sm text-muted">
+                    Configure notifications, security, and themes.
+                    <div style="margin-top:14px; border-top:1px solid var(--border); padding-top:14px">
+                      <label style="display:block; font-size:0.75rem; font-weight:600; margin-bottom:6px; color:var(--fg)">API Key (OpenRouter or Anthropic)</label>
+                      <input type="password" id="settings-api-key" placeholder="sk-or-... or sk-ant-..." style="width:100%; padding:8px 12px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius-md); color:var(--fg); font-size:0.78rem; outline:none; font-family:var(--font-mono)" onchange="localStorage.setItem('anthropic-api-key', this.value.trim().replace(/\.$/, ''))" />
+                      <div style="font-size:0.65rem; color:var(--fg-muted); margin-top:4px">Saved locally in browser storage. Supports OpenRouter (nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free) and Anthropic keys.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Volunteer Dispatch Board</div>
+            <div style="display:flex; flex-direction:column; gap:var(--space-2)">
+              <div
+                style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:var(--red-surface); border:1px solid rgba(239,68,68,0.22); border-radius:var(--radius-md)">
+                <div>
+                  <div style="font-weight:600; font-size:0.82rem">Team Alpha — Crowd Control</div>
+                  <div style="font-family:var(--font-mono); font-size:0.68rem; color:var(--fg-secondary)">12 members ·
+                    Gate A</div>
+                </div><span class="badge badge-critical">ACTIVE</span>
+              </div>
+              <div
+                style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:var(--orange-surface); border:1px solid rgba(249,115,22,0.22); border-radius:var(--radius-md)">
+                <div>
+                  <div style="font-weight:600; font-size:0.82rem">Team Medic — Heat Response</div>
+                  <div style="font-family:var(--font-mono); font-size:0.68rem; color:var(--fg-secondary)">4 members ·
+                    Section 112</div>
+                </div><span class="badge badge-high">ACTIVE</span>
+              </div>
+              <div
+                style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:var(--radius-md)">
+                <div>
+                  <div style="font-weight:600; font-size:0.82rem">Team Beta — Traffic Flow</div>
+                  <div style="font-family:var(--font-mono); font-size:0.68rem; color:var(--fg-secondary)">8 members ·
+                    Parking P1</div>
+                </div><span class="badge badge-medium">DISPATCHED</span>
+              </div>
+              <div
+                style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:var(--radius-md)">
+                <div>
+                  <div style="font-weight:600; font-size:0.82rem">Security — Lost Child</div>
+                  <div style="font-family:var(--font-mono); font-size:0.68rem; color:var(--fg-secondary)">2 members ·
+                    Gate B</div>
+                </div><span class="badge badge-low">RESOLVED</span>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="background:var(--gold-surface); border-color:rgba(245,158,11,0.22)">
+            <div style="font-weight:700; color:var(--gold-bright); margin-bottom:var(--space-2); font-size:0.88rem">AI
+              Forecast — Next 30 Min</div>
+            <div style="font-size:0.8rem; color:var(--fg-secondary); line-height:1.65">
+              · <strong style="color:var(--red-bright)">Gate A</strong>: surge to 98% at FT<br>
+              · <strong style="color:var(--orange-bright)">Parking P1</strong>: 45 min exit queue — dispatch 6 more
+              traffic marshals<br>
+              · <strong style="color:var(--green-bright)">Metro Blue Line</strong>: recommended primary exit — 35%
+              capacity<br>
+              · <strong style="color:var(--blue-bright)">Cooling stations</strong>: 3 more units needed in North
+              Concourse post-match
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════
+         PAGE: PERIMETER DEFENSE
+    ═══════════════════════════════════════ -->
+    <section id="page-perimeter" class="page" role="tabpanel" aria-labelledby="tab-perimeter">
+      <div class="section-header">
+        <h1 class="section-title">Perimeter <span class="accent">Defense</span></h1>
+        <p class="section-sub">Pre-gate crowd forecasting · CCTV & drone analytics · Tactical lockdown controls</p>
+      </div>
+
+      <div class="grid-2 mb-4" style="align-items:start">
+        <!-- Left Column: Threat Monitor & Action Controls -->
+        <div style="display:flex; flex-direction:column; gap:var(--space-4)">
+          
+          <!-- Global Threat Level Card -->
+          <div class="card">
+            <div class="card-title">Global Threat Level</div>
+            <div class="threat-level-flex">
+              <div class="threat-avatar-container">
+                <img src="images/soccer-ball.jpg" alt="Threat level visual indicator" class="threat-avatar-img" id="threat-indicator-avatar" />
+                <div class="threat-glow-ring" id="threat-glow-ring"></div>
+              </div>
+              <div style="flex:1">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+                  <span class="threat-badge" id="threat-badge-status">ELEVATED</span>
+                  <span class="threat-percent" id="threat-percent-val">68%</span>
+                </div>
+                <div class="threat-progress-track">
+                  <div class="threat-progress-bar" id="threat-progress-bar" style="width:68%"></div>
+                </div>
+                <div style="font-size:0.75rem; color:var(--fg-secondary); margin-top:8px" id="threat-status-desc">
+                  Warning: High concentration of unverified ticketless crowds detected in Transit Hub.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tactical Control Board -->
+          <div class="card">
+            <div class="card-title">Lockdown & Tactical Controls</div>
+            <p style="font-size:0.78rem; color:var(--fg-secondary); line-height:1.5; margin-bottom:var(--space-4)">
+              Copa America 2024 warning protocol: Activating lockdown deploys mounted police and raises physical barricades to stop ticketless surges 15 minutes before they hit physical gates.
+            </p>
+            <div class="flex gap-2 mb-3">
+              <button class="btn btn-primary" id="btn-lockdown-trigger" style="background:#EF4444; border-color:#EF4444; cursor:pointer" onclick="triggerPerimeterLockdown()">
+                🚨 Trigger Lockdown
+              </button>
+              <button class="btn btn-ghost" id="btn-lockdown-reset" style="cursor:pointer; display:none" onclick="resetPerimeterLockdown()">
+                Reset Alert
+              </button>
+            </div>
+            
+            <!-- Lockdown countdown log -->
+            <div id="lockdown-log-container" style="display:none; flex-direction:column; gap:var(--space-2); padding-top:var(--space-2); border-top:1px solid var(--border)">
+              <div style="display:flex; justify-content:space-between; align-items:center">
+                <span style="font-size:0.8rem; font-weight:700; color:var(--red-bright)">Surge Impact Countdown</span>
+                <span id="lockdown-countdown-timer" style="font-family:var(--font-mono); font-weight:700; font-size:1.1rem; color:var(--red-bright)">15:00</span>
+              </div>
+              <div class="lockdown-events-log" id="lockdown-events-log">
+                <!-- Log entries injected by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: CCTV Drone Feed & AI Weapons Detector -->
+        <div style="display:flex; flex-direction:column; gap:var(--space-4)">
+          <div class="card" style="padding:0; overflow:hidden">
+            <!-- CCTV Camera overlay container -->
+            <div class="cctv-camera-container" id="cctv-container">
+              <!-- Static Stadium View (visible by default) -->
+              <img src="images/stadium.jpg" alt="Drone CCTV live view" class="cctv-bg-img" id="cctv-static-img" />
+              
+              <!-- Video Element (hidden by default) -->
+              <video id="cctv-video" autoplay playsinline muted style="display:none; width:100%; height:100%; object-fit:cover; position:absolute; inset:0;"></video>
+              
+              <!-- Real-time Bounding Box Canvas Overlay (hidden by default) -->
+              <canvas id="cctv-canvas" style="display:none; position:absolute; inset:0; width:100%; height:100%; z-index:2; pointer-events:none;"></canvas>
+              
+              <!-- FlowSense AI Top-Left Monospace Overlay Panel -->
+              <div class="cctv-telemetry-overlay" id="cctv-telemetry-overlay" style="display:none; position:absolute; top:40px; left:12px; background:rgba(9, 15, 29, 0.85); border:1px solid rgba(34, 197, 94, 0.3); border-radius:4px; padding:8px 12px; font-family:JetBrains Mono, Courier New, monospace; font-size:0.7rem; color:#22c55e; line-height:1.4; z-index:5; pointer-events:none; box-shadow:0 4px 12px rgba(0,0,0,0.5)">
+                <div style="font-weight:700; font-size:0.8rem; margin-bottom:2px; color:#22c55e; display:flex; align-items:center; gap:4px">
+                  <span>👥</span> <span id="telemetry-count">0</span> persons detected
+                </div>
+                <div style="color:#00D4FF; font-size:0.68rem; margin-bottom:2px; display:flex; gap:10px">
+                  <span>♂ <span id="telemetry-males">0</span></span>
+                  <span>♀ <span id="telemetry-females">0</span></span>
+                  <span>🤨 <span id="telemetry-threats">0</span></span>
+                </div>
+                <div style="font-size:0.62rem; color:rgba(34, 197, 94, 0.75)">
+                  Today: <span id="telemetry-total">1</span> | Peak: <span id="telemetry-peak">1</span>
+                </div>
+              </div>
+
+              <!-- Top-Right 1 live Badge -->
+              <div id="cctv-live-badge-wrapper" style="display:none; position:absolute; top:12px; right:12px; z-index:3;">
+                <span class="badge" style="background:rgba(9, 15, 29, 0.8); border:1px solid rgba(255,255,255,0.08); font-family:Outfit, sans-serif; font-size:0.65rem; padding:3px 8px; display:flex; align-items:center; gap:6px; color:#fff; border-radius:4px">
+                  <span style="display:inline-block; width:6px; height:6px; background:#00FF88; border-radius:50%; animation:live-blink 1.5s infinite"></span> 1 live
+                </span>
+              </div>
+
+              <!-- Red Threat Alert Flash HUD -->
+              <div class="cctv-alarm-overlay" id="cctv-alarm-overlay"></div>
+              
+              <!-- Green HUD scanlines -->
+              <div class="cctv-scanline"></div>
+              <div class="cctv-hud-header">
+                <span class="cctv-rec-dot" id="cctv-rec-dot"></span>
+                <span id="cctv-feed-title">DRONE FEED: METLIFE PERIMETER · LIVE</span>
+                <span class="badge" id="cctv-feed-badge" style="margin-left:8px; background:rgba(234,179,8,0.18); color:#EAB308; border:1px solid rgba(234,179,8,0.3); font-size:0.58rem; padding:1px 4px">SIMULATION</span>
+              </div>
+              
+              <!-- Absolute positioned heatspots representing surges -->
+              <div class="cctv-heatspot heatspot-transit" id="heatspot-transit" style="left: 20%; top: 40%">
+                <div class="heatspot-core"></div>
+                <div class="heatspot-halo"></div>
+              </div>
+              <div class="cctv-heatspot heatspot-parking" id="heatspot-parking" style="left: 60%; top: 30%">
+                <div class="heatspot-core"></div>
+                <div class="heatspot-halo"></div>
+              </div>
+              <div class="cctv-heatspot heatspot-breach" id="heatspot-breach" style="left: 45%; top: 65%; display:none">
+                <div class="heatspot-core critical"></div>
+                <div class="heatspot-halo critical"></div>
+              </div>
+
+              <!-- HUD Target boxes -->
+              <div class="hud-target-box" id="hud-target-box-1" style="left: 15%; top: 35%; width: 90px; height: 90px">
+                <span class="hud-target-label">SURGE TR1</span>
+              </div>
+              <div class="hud-target-box" id="hud-target-box-2" style="left: 55%; top: 25%; width: 110px; height: 110px">
+                <span class="hud-target-label">SURGE PK4</span>
+              </div>
+            </div>
+            
+            <div style="padding:var(--space-4)">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+                <span style="font-size:0.8rem; font-weight:600">Simulate External Ingestion & AI Controls</span>
+                <span class="badge" id="ai-model-status-badge" style="background:rgba(255,255,255,0.06); color:var(--fg-secondary); border:1px solid var(--border)">AI INACTIVE</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap">
+                <div style="display:flex; gap:8px">
+                  <button class="btn btn-ghost btn-sm" onclick="simulateIngest('transit')" style="cursor:pointer">Verify Transit Surge</button>
+                  <button class="btn btn-ghost btn-sm" onclick="simulateIngest('breach')" style="cursor:pointer">Verify Breaches</button>
+                </div>
+                <div style="display:flex; gap:8px">
+                  <button class="btn btn-primary btn-sm" id="btn-cctv-ai" onclick="toggleCctvAI()" style="background:var(--accent-blue); border-color:var(--accent-blue); cursor:pointer">
+                    ⚡ Connect Live CCTV AI Feed
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- New Captured Threat Database Log -->
+          <div class="card" id="threat-database-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-3); flex-wrap:wrap; gap:8px">
+              <div class="card-title" style="margin-bottom:0">📷 YOLOv8 Threat Log Database</div>
+              <div style="display:flex; gap:8px; align-items:center">
+                <span class="badge badge-low" id="threat-log-count" style="font-size:0.65rem">0 threats logged</span>
+                <button class="btn btn-ghost btn-sm" id="btn-clear-threats" style="padding:2px 8px; font-size:0.65rem; border-color:rgba(255,255,255,0.08); cursor:pointer; color:var(--text-muted)">Clear Database</button>
+              </div>
+            </div>
+            <p style="font-size:0.75rem; color:var(--fg-secondary); line-height:1.4; margin-bottom:var(--space-3)">
+              Real-time threat capture logs with auto-generated camera crop snapshots, confidence scores, and locations. Older snapshots are shifted off to protect device storage limit.
+            </p>
+            <div class="threat-log-grid" id="threat-log-grid">
+              <div style="grid-column: 1 / -1; text-align:center; padding:var(--space-6); color:var(--fg-secondary); font-size:0.8rem;">
+                No threats detected. Connect CCTV feed and hold a phone (handgun proxy) or scissors in front of the lens.
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════
+       PAGE: TRANSLATOR
+  ═══════════════════════════════════════ -->
+    <section id="page-translate" class="page" role="tabpanel">
+      <div class="section-header">
+        <h1 class="section-title">Emergency <span class="accent">Translator</span></h1>
+        <p class="section-sub">50 languages · Pre-cached offline · Medical vocabulary · Show to any staff or first
+          responder</p>
+      </div>
+      <div class="grid-2 mb-4" style="align-items:start">
+        <div>
+          <div class="card mb-4">
+            <div class="card-title">Select Language · <span id="current-lang-name"
+                style="color:var(--gold-bright)">English</span></div>
+            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:5px; margin-bottom:var(--space-4)">
+              <button class="translator-lang-btn lang-btn active" data-lang="en" data-name="English"
+                style="cursor:pointer">🇬🇧 EN</button>
+              <button class="translator-lang-btn lang-btn" data-lang="es" data-name="Spanish"
+                style="cursor:pointer">🇪🇸 ES</button>
+              <button class="translator-lang-btn lang-btn" data-lang="fr" data-name="French" style="cursor:pointer">🇫🇷
+                FR</button>
+              <button class="translator-lang-btn lang-btn" data-lang="pt" data-name="Portuguese"
+                style="cursor:pointer">🇧🇷 PT</button>
+              <button class="translator-lang-btn lang-btn" data-lang="de" data-name="German" style="cursor:pointer">🇩🇪
+                DE</button>
+              <button class="translator-lang-btn lang-btn" data-lang="ar" data-name="Arabic" style="cursor:pointer">🇸🇦
+                AR</button>
+              <button class="translator-lang-btn lang-btn" data-lang="zh" data-name="Chinese"
+                style="cursor:pointer">🇨🇳 ZH</button>
+              <button class="translator-lang-btn lang-btn" data-lang="hi" data-name="Hindi" style="cursor:pointer">🇮🇳
+                HI</button>
+              <button class="translator-lang-btn lang-btn" data-lang="ja" data-name="Japanese"
+                style="cursor:pointer">🇯🇵 JA</button>
+              <button class="translator-lang-btn lang-btn" data-lang="ko" data-name="Korean" style="cursor:pointer">🇰🇷
+                KO</button>
+              <button class="translator-lang-btn lang-btn" data-lang="ru" data-name="Russian"
+                style="cursor:pointer">🇷🇺 RU</button>
+              <button class="translator-lang-btn lang-btn" data-lang="tr" data-name="Turkish"
+                style="cursor:pointer">🇹🇷 TR</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Emergency Phrases — Tap to generate card</div>
+            <div id="phrase-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-2)"></div>
+          </div>
+        </div>
+        <div>
+          <div id="emergency-card-modal" style="display:none; margin-bottom:var(--space-4)" aria-live="polite"></div>
+          <div class="card mb-4" style="background:var(--red-surface); border-color:rgba(239,68,68,0.3)">
+            <div style="font-weight:700; color:var(--red-bright); font-size:1rem; margin-bottom:var(--space-2)">How to
+              Use</div>
+            <ol
+              style="display:flex; flex-direction:column; gap:var(--space-2); font-size:0.8rem; color:var(--fg-secondary); padding-left:var(--space-4)">
+              <li>Select the language needed</li>
+              <li>Tap the matching emergency phrase</li>
+              <li>Show the card to any staff, police, or medic</li>
+              <li>Card includes your emergency contact + last location</li>
+            </ol>
+          </div>
+          <div class="card">
+            <div class="card-title">Offline Cache Status</div>
+            <div style="font-size:0.8rem; color:var(--fg-secondary); margin-bottom:var(--space-3); line-height:1.5">All
+              50 languages pre-downloaded before the match. Works with zero network signal.</div>
+            <dl style="display:flex; flex-direction:column; gap:var(--space-2)">
+              <div class="flex justify-between text-sm">
+                <dt class="text-muted">Languages cached</dt>
+                <dd style="font-family:var(--font-mono); font-weight:600; color:var(--green-bright)">50 / 50</dd>
+              </div>
+              <div class="progress-bar mb-2">
+                <div class="progress-fill" style="width:100%; background:var(--green)"></div>
+              </div>
+              <div class="flex justify-between text-sm">
+                <dt class="text-muted">Medical vocabulary</dt>
+                <dd style="font-family:var(--font-mono); font-weight:600; color:var(--green-bright)">Loaded</dd>
+              </div>
+              <div class="flex justify-between text-sm">
+                <dt class="text-muted">Last sync</dt>
+                <dd style="font-family:var(--font-mono); font-weight:600; color:var(--blue-bright)">Today 18:45</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════
+         PAGE: AUTHENTICATOR
+    ═══════════════════════════════════════ -->
+    <section id="page-auth" class="page" role="tabpanel" aria-labelledby="nav-signin-btn">
+      <!-- Gradient background and glow spots specific to auth view -->
+      <div class="auth-bg-overlay" aria-hidden="true">
+        <div class="auth-radial-glow auth-glow-top"></div>
+        <div class="auth-radial-glow auth-glow-bottom"></div>
+        <div class="auth-glow-spot auth-spot-left"></div>
+        <div class="auth-glow-spot auth-spot-right"></div>
+      </div>
+
+      <div class="auth-container">
+        <!-- 3D Card -->
+        <div class="auth-card-wrapper" id="auth-card-3d">
+          <div class="auth-card-border-glow" aria-hidden="true"></div>
+          
+          <!-- Border light beams -->
+          <div class="auth-light-beams-container" aria-hidden="true">
+            <div class="auth-beam beam-top"></div>
+            <div class="auth-beam beam-right"></div>
+            <div class="auth-beam beam-bottom"></div>
+            <div class="auth-beam beam-left"></div>
+            
+            <div class="auth-corner-dot dot-tl"></div>
+            <div class="auth-corner-dot dot-tr"></div>
+            <div class="auth-corner-dot dot-br"></div>
+            <div class="auth-corner-dot dot-bl"></div>
+          </div>
+
+          <!-- Glass Card Content -->
+          <div class="auth-card-content">
+            <div class="auth-card-pattern" aria-hidden="true"></div>
+            
+            <!-- Header -->
+            <div class="auth-header">
+              <div class="auth-logo-icon" aria-hidden="true">
+                <img src="images/soccer-ball.jpg" alt="PULSE Football Logo" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />
+              </div>
+              <h2 class="auth-title">Welcome Back</h2>
+              <p class="auth-subtitle">Sign in to continue to PULSE</p>
+            </div>
+
+            <!-- Form -->
+            <form id="auth-form" class="auth-form" onsubmit="event.preventDefault();">
+              <div class="auth-fields-stack">
+                
+                <!-- Email Field -->
+                <div class="auth-field-wrapper" id="auth-field-email-container">
+                  <div class="auth-input-glow-border" aria-hidden="true"></div>
+                  <div class="auth-input-box">
+                    <span class="auth-input-icon" aria-hidden="true">
+                      <!-- Mail SVG -->
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                    </span>
+                    <input type="email" id="auth-email" class="auth-input" placeholder="Email address" required autocomplete="email" aria-label="Email address" />
+                  </div>
+                </div>
+
+                <!-- Password Field -->
+                <div class="auth-field-wrapper" id="auth-field-password-container">
+                  <div class="auth-input-glow-border" aria-hidden="true"></div>
+                  <div class="auth-input-box">
+                    <span class="auth-input-icon" aria-hidden="true">
+                      <!-- Lock SVG -->
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    </span>
+                    <input type="password" id="auth-password" class="auth-input" placeholder="Password" required autocomplete="current-password" aria-label="Password" />
+                    <button type="button" class="auth-toggle-password" id="auth-toggle-pwd-btn" aria-label="Toggle password visibility" style="cursor:pointer">
+                      <!-- Eye/Closed SVGs dynamically swapped -->
+                      <svg class="eye-open-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      <svg class="eye-closed-icon" style="display:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Options (Remember me + Forgot password) -->
+              <div class="auth-options">
+                <label class="auth-remember">
+                  <div class="auth-checkbox-wrapper">
+                    <input type="checkbox" id="auth-remember-check" class="auth-checkbox" />
+                    <div class="auth-custom-box">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="auth-check-icon" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                  </div>
+                  <span style="cursor:pointer">Remember me</span>
+                </label>
+                <a href="#" class="auth-link-forgot" onclick="triggerToast('Password reset link sent to your registered email.', 'success')">Forgot password?</a>
+              </div>
+
+              <!-- Submit button -->
+              <button type="submit" class="auth-submit-btn" id="auth-submit-btn" style="cursor:pointer">
+                <span class="btn-text-content">
+                  Sign In
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="12 5 19 12 12 19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </span>
+                <span class="btn-spinner" style="display:none"></span>
+              </button>
+
+              <div class="auth-divider" aria-hidden="true">
+                <span>or</span>
+              </div>
+
+              <!-- Google Button -->
+              <button type="button" class="auth-google-btn" id="auth-google-btn" style="cursor:pointer">
+                <div class="auth-google-glow" aria-hidden="true"></div>
+                <div class="auth-google-content">
+                  <!-- Google G SVG -->
+                  <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.6 15.02 1 12 1 7.35 1 3.4 3.65 1.49 7.51l3.85 2.99c.9-2.7 3.42-4.46 6.66-4.46z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.34H12v4.44h6.44c-.28 1.47-1.11 2.71-2.36 3.55l3.66 2.84c2.14-1.98 3.39-4.89 3.39-8.49z"/><path fill="#FBBC05" d="M5.34 10.5a7.16 7.16 0 0 1 0-4.44L1.49 3.07C.54 5 0 7.17 0 9.5s.54 4.5 1.49 6.43l3.85-2.99a7.12 7.12 0 0 1 0-2.44z"/><path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.66-2.84c-1.01.68-2.31 1.09-4.3 1.09-3.24 0-5.76-1.76-6.66-4.46L1.49 16.88C3.4 20.74 7.35 23 12 23z"/></svg>
+                  <span>Sign in with Google</span>
+                </div>
+              </button>
+
+              <p class="auth-footer-text">
+                Don't have an account? <a href="#" class="auth-signup-link" onclick="triggerToast('Staff accounts must be registered by venue administrators.', 'warning')">Sign up</a>
+              </p>
+            </form>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Global toast helper for inline onclick attributes
+    function triggerToast(msg, type) {
+      const c = document.getElementById('toast-container');
+      if (!c) return;
+      const el = document.createElement('div');
+      el.className = 'toast ' + (type || 'info');
+      const icon = type === 'success'
+        ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>'
+        : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--blue-bright)" stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+      const safeMsg = document.createElement('span');
+      safeMsg.textContent = msg;
+      el.innerHTML = `<span class="toast-icon">${icon}</span>`;
+      el.appendChild(safeMsg);
+      c.appendChild(el);
+      setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateX(16px)'; el.style.transition = 'all 0.3s ease'; setTimeout(() => el.remove(), 300); }, 4000);
+    }
+
+    function toggleAccessibility() {
+      if (typeof selectRoute === 'function') selectRoute('accessible');
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="data.js"></script>
+  <script src="ai-engine.js"></script>
+  <script src="app.js?v=1.3"></script>
+</body>
+
+</html>

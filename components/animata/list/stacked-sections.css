@@ -1,0 +1,22 @@
+[data-stacked-deck] {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+[data-stacked-card] {
+  position: sticky;
+  top: 0;
+  width: 100%;
+}
+
+[data-stacked-content] {
+  min-height: 0;
+  transform-origin: 50% 0%;
+  transition: transform 0.1s ease-out;
+  will-change: transform;
+}
+
+[data-stacked-content][data-stacked-covered] {
+  transition: transform 0.3s ease-out;
+}
