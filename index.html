@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*; media-src 'self' blob: data:; connect-src 'self' https://openrouter.ai https://api.anthropic.com https://api.open-meteo.com;" />
   <title>PULSE — FIFA 2026 AI Survival Brain</title>
   <meta name="description"
     content="PULSE is the FIFA World Cup 2026 GenAI-powered safety companion — offline-first AI for navigation, heat risk, crowd intelligence, emergency translation, and group safety." />
@@ -1338,8 +1339,8 @@
                   <div class="ui-tab-card-content text-sm text-muted">
                     Configure notifications, security, and themes.
                     <div style="margin-top:14px; border-top:1px solid var(--border); padding-top:14px">
-                      <label style="display:block; font-size:0.75rem; font-weight:600; margin-bottom:6px; color:var(--fg)">API Key (OpenRouter or Anthropic)</label>
-                      <input type="password" id="settings-api-key" placeholder="sk-or-... or sk-ant-..." style="width:100%; padding:8px 12px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius-md); color:var(--fg); font-size:0.78rem; outline:none; font-family:var(--font-mono)" onchange="localStorage.setItem('anthropic-api-key', this.value.trim().replace(/\.$/, ''))" />
+                      <label for="settings-api-key" style="display:block; font-size:0.75rem; font-weight:600; margin-bottom:6px; color:var(--fg)">API Key (OpenRouter or Anthropic)</label>
+                      <input type="password" id="settings-api-key" placeholder="sk-or-... or sk-ant-..." style="width:100%; padding:8px 12px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius-md); color:var(--fg); font-size:0.78rem; outline:none; font-family:var(--font-mono)" aria-label="API Key (OpenRouter or Anthropic)" onchange="localStorage.setItem('anthropic-api-key', this.value.trim().replace(/\.$/, ''))" />
                       <div style="font-size:0.65rem; color:var(--fg-muted); margin-top:4px">Saved locally in browser storage. Supports OpenRouter (nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free) and Anthropic keys.</div>
                     </div>
                   </div>
@@ -1503,7 +1504,7 @@
               </div>
 
               <!-- Red Threat Alert Flash HUD -->
-              <div class="cctv-alarm-overlay" id="cctv-alarm-overlay"></div>
+              <div class="cctv-alarm-overlay" id="cctv-alarm-overlay" role="alert" aria-live="assertive" aria-atomic="true"></div>
               
               <!-- Green HUD scanlines -->
               <div class="cctv-scanline"></div>

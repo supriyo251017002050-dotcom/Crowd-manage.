@@ -44,11 +44,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => {
+      t.classList.remove('active');
+      t.setAttribute('aria-selected', 'false');
+    });
     const page = document.getElementById(`page-${pageId}`);
     const tab  = document.querySelector(`[data-page="${pageId}"]`);
     if (page) page.classList.add('active');
-    if (tab)  tab.classList.add('active');
+    if (tab) {
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+    }
     activePage = pageId;
     onPageEnter(pageId);
   };
@@ -2654,8 +2660,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const overlay = document.getElementById('cctv-alarm-overlay');
     if (overlay) {
+      overlay.textContent = `⚠️ THREAT ALERT: ${threat.type.toUpperCase()} DETECTED`;
       overlay.classList.add('active');
-      setTimeout(() => overlay.classList.remove('active'), 2500);
+      setTimeout(() => {
+        overlay.classList.remove('active');
+        overlay.textContent = '';
+      }, 2500);
     }
 
     const video = document.getElementById('cctv-video');

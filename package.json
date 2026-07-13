@@ -1,0 +1,11 @@
+{
+  "name": "pulse-fifa-crowd-manage",
+  "version": "1.0.0",
+  "description": "PULSE FIFA 2026 AI Crowd Safety & Perimeter Security Companion",
+  "main": "app.js",
+  "scripts": {
+    "test": "node test/cctv.test.js"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
