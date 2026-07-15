@@ -2928,6 +2928,29 @@ body.light-theme .ui-tabs-trigger.active {
   height: 320px;
   background: #020617;
   overflow: hidden;
+  transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* CCTV Maximized State */
+.cctv-camera-container.maximized {
+  height: 560px;
+}
+
+/* CCTV Resize Button Hover */
+.cctv-resize-btn:hover {
+  background: rgba(9, 15, 29, 0.98) !important;
+  border-color: rgba(34, 197, 94, 0.5) !important;
+  transform: scale(1.05);
+}
+
+/* For mobile devices */
+@media (max-width: 768px) {
+  .cctv-camera-container {
+    height: 240px; /* smaller default height for mobile */
+  }
+  .cctv-camera-container.maximized {
+    height: 420px; /* smaller maximized height for mobile */
+  }
 }
 
 .cctv-bg-img {
@@ -2953,7 +2976,7 @@ body.light-theme .ui-tabs-trigger.active {
 
 @keyframes scanline-scrolling {
   0% { top: -60px; }
-  100% { top: 320px; }
+  100% { top: 100%; }
 }
 
 .cctv-hud-header {

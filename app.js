@@ -2312,6 +2312,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  window.toggleCctvSize = () => {
+    const container = document.getElementById('cctv-container');
+    const expandIcon = document.querySelector('.resize-icon-expand');
+    const shrinkIcon = document.querySelector('.resize-icon-shrink');
+    
+    if (container) {
+      container.classList.toggle('maximized');
+      const isMax = container.classList.contains('maximized');
+      
+      if (expandIcon && shrinkIcon) {
+        expandIcon.style.display = isMax ? 'none' : 'block';
+        shrinkIcon.style.display = isMax ? 'block' : 'none';
+      }
+      
+      const video = document.getElementById('cctv-video');
+      const canvas = document.getElementById('cctv-canvas');
+      if (video && canvas) {
+        const updateSize = () => {
+          canvas.width = video.clientWidth;
+          canvas.height = video.clientHeight;
+        };
+        updateSize();
+        setTimeout(updateSize, 100);
+        setTimeout(updateSize, 200);
+        setTimeout(updateSize, 300);
+      }
+    }
+  };
+
   window.toggleCctvAI = async () => {
     const video = document.getElementById('cctv-video');
     const canvas = document.getElementById('cctv-canvas');
@@ -2340,33 +2369,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       try {
-        let selectedDeviceId = null;
-        try {
-          const devices = await navigator.mediaDevices.enumerateDevices();
-          const videoDevices = devices.filter(d => d.kind === 'videoinput');
-          console.log("Enumerated video inputs:", videoDevices);
-          
-          const builtIn = videoDevices.find(d => 
-            d.label.toLowerCase().includes('integrated') || 
-            d.label.toLowerCase().includes('built-in') || 
-            d.label.toLowerCase().includes('webcam') ||
-            (d.label.toLowerCase().includes('camera') && !d.label.includes('M2010J19CG') && d.label !== '')
-          );
-          
-          if (builtIn) {
-            selectedDeviceId = builtIn.deviceId;
-          } else {
-            const fallback = videoDevices.find(d => !d.label.includes('M2010J19CG') && d.label !== '');
-            if (fallback) selectedDeviceId = fallback.deviceId;
-          }
-        } catch (deviceErr) {
-          console.warn("Could not enumerate devices, falling back to default:", deviceErr);
-        }
-
         const constraints = {
-          video: selectedDeviceId 
-            ? { deviceId: { exact: selectedDeviceId }, width: { ideal: 640 }, height: { ideal: 480 } }
-            : { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" }
+          video: {
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+            facingMode: { ideal: "environment" }
+          }
         };
 
         cctvStream = await navigator.mediaDevices.getUserMedia(constraints);

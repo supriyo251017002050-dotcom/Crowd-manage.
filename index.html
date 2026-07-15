@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*; media-src 'self' blob: data:; connect-src 'self' https://openrouter.ai https://api.anthropic.com https://api.open-meteo.com;" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*; media-src 'self' blob: data:; connect-src 'self' https://openrouter.ai https://api.anthropic.com https://api.open-meteo.com https://storage.googleapis.com https://*.googleapis.com;" />
   <title>PULSE — FIFA 2026 AI Survival Brain</title>
   <meta name="description"
     content="PULSE is the FIFA World Cup 2026 GenAI-powered safety companion — offline-first AI for navigation, heat risk, crowd intelligence, emergency translation, and group safety." />
@@ -1497,11 +1497,19 @@
               </div>
 
               <!-- Top-Right 1 live Badge -->
-              <div id="cctv-live-badge-wrapper" style="display:none; position:absolute; top:12px; right:12px; z-index:3;">
+              <div id="cctv-live-badge-wrapper" style="display:none; position:absolute; top:12px; right:48px; z-index:3;">
                 <span class="badge" style="background:rgba(9, 15, 29, 0.8); border:1px solid rgba(255,255,255,0.08); font-family:Outfit, sans-serif; font-size:0.65rem; padding:3px 8px; display:flex; align-items:center; gap:6px; color:#fff; border-radius:4px">
                   <span style="display:inline-block; width:6px; height:6px; background:#00FF88; border-radius:50%; animation:live-blink 1.5s infinite"></span> 1 live
                 </span>
               </div>
+
+              <!-- CCTV Resize Control Button -->
+              <button id="btn-cctv-resize" class="cctv-resize-btn" aria-label="Toggle camera size" title="Maximize/Minimize CCTV Feed" onclick="toggleCctvSize()" style="position:absolute; top:12px; right:12px; z-index:10; background:rgba(9, 15, 29, 0.85); border:1px solid rgba(255, 255, 255, 0.15); border-radius:4px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; color:#22C55E; cursor:pointer; font-size:0.8rem; transition:all 0.2s ease">
+                <!-- Maximize Icon (double arrow expand) -->
+                <svg class="resize-icon-expand" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                <!-- Minimize Icon (shrink) -->
+                <svg class="resize-icon-shrink" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7"/></svg>
+              </button>
 
               <!-- Red Threat Alert Flash HUD -->
               <div class="cctv-alarm-overlay" id="cctv-alarm-overlay" role="alert" aria-live="assertive" aria-atomic="true"></div>
