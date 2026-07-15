@@ -2271,7 +2271,7 @@ document.addEventListener('DOMContentLoaded', () => {
     grid.innerHTML = threatDatabase.map(threat => `
       <div class="threat-log-card" style="position:relative">
         <button class="threat-delete-btn btn-delete-threat" data-id="${threat.id}" title="Delete snapshot">🗑️</button>
-        <img class="threat-log-thumb" src="${threat.img}" alt="Screenshot" />
+        <img class="threat-log-thumb" src="${threat.img}" alt="Screenshot" onclick="if(window.openLightbox) window.openLightbox('${threat.img}', '${escapeHTML(threat.type.split(' ')[0])}', '${escapeHTML(threat.time)}', '${escapeHTML(threat.loc)}', '${escapeHTML(threat.conf)}')"/>
         <div class="threat-log-info">
           <div class="threat-log-class">
             <span>${escapeHTML(threat.type.split(' ')[0])}</span>
@@ -2889,7 +2889,134 @@ document.addEventListener('DOMContentLoaded', () => {
     input.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
   };
 
+  // ── Fullscreen Image Lightbox Gesture Engine ──────────────────────────
+  const initLightbox = () => {
+    const modal = document.getElementById('lightbox-modal');
+    const overlay = document.getElementById('lightbox-overlay');
+    const closeBtn = document.getElementById('lightbox-close-btn');
+    const img = document.getElementById('lightbox-img');
+    const title = document.getElementById('lightbox-title');
+    const subtitle = document.getElementById('lightbox-subtitle');
+    const wrapper = document.getElementById('lightbox-wrapper');
+
+    if (!modal || !img) return;
+
+    let scale = 1;
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let translateX = 0, translateY = 0;
+    let initialDistance = 0;
+
+    const updateTransform = () => {
+      img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+    };
+
+    window.openLightbox = (src, threatType, time, loc, conf) => {
+      img.src = src;
+      title.textContent = threatType;
+      subtitle.textContent = `${loc} · ${time} · ${conf}`;
+      scale = 1;
+      translateX = 0;
+      translateY = 0;
+      updateTransform();
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    };
+
+    const closeLightbox = () => {
+      modal.classList.remove('active');
+      document.body.style.overflow = 'auto';
+      setTimeout(() => { img.src = ''; }, 300);
+    };
+
+    closeBtn.addEventListener('click', closeLightbox);
+    overlay.addEventListener('click', closeLightbox);
+
+    // Desktop Wheel Zoom
+    wrapper.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      scale += e.deltaY * -0.005;
+      scale = Math.min(Math.max(1, scale), 5);
+      if (scale === 1) { translateX = 0; translateY = 0; }
+      updateTransform();
+    });
+
+    // Mouse Panning
+    img.addEventListener('mousedown', (e) => {
+      if (scale > 1) {
+        isDragging = true;
+        startX = e.clientX - translateX;
+        startY = e.clientY - translateY;
+        img.style.cursor = 'grabbing';
+      }
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      translateX = e.clientX - startX;
+      translateY = e.clientY - startY;
+      updateTransform();
+    });
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+      img.style.cursor = scale > 1 ? 'grab' : 'zoom-in';
+    });
+
+    // Double Click Zoom
+    img.addEventListener('dblclick', () => {
+      scale = scale > 1 ? 1 : 2;
+      if (scale === 1) { translateX = 0; translateY = 0; }
+      img.style.cursor = scale > 1 ? 'grab' : 'zoom-in';
+      updateTransform();
+    });
+
+    // Touch Gestures (Pinch to zoom, pan, swipe down)
+    let lastTouchY = 0;
+    wrapper.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 2) {
+        initialDistance = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+      } else if (e.touches.length === 1) {
+        isDragging = true;
+        startX = e.touches[0].pageX - translateX;
+        startY = e.touches[0].pageY - translateY;
+        lastTouchY = e.touches[0].pageY;
+      }
+    });
+
+    wrapper.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const currentDistance = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+        const pinchScale = currentDistance / initialDistance;
+        scale = Math.min(Math.max(1, scale * pinchScale), 5);
+        initialDistance = currentDistance;
+        updateTransform();
+      } else if (e.touches.length === 1 && scale > 1) {
+        e.preventDefault();
+        translateX = e.touches[0].pageX - startX;
+        translateY = e.touches[0].pageY - startY;
+        updateTransform();
+      } else if (e.touches.length === 1 && scale === 1) {
+        // Swipe down to close
+        const deltaY = e.touches[0].pageY - lastTouchY;
+        if (deltaY > 50) {
+          closeLightbox();
+        }
+      }
+    });
+
+    wrapper.addEventListener('touchend', () => {
+      isDragging = false;
+    });
+
+    // Esc key to close
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('active')) closeLightbox();
+    });
+  };
+
   initGlobalAI();
+  initLightbox();
   initParticles();
   initChat();
   initSOS();
