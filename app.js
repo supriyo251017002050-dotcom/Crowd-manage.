@@ -416,7 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
     camera.position.z = 1;
 
     const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(1.0); // Optimize for mobile/laptops by avoiding high-DPI GPU overhead
 
     const uniforms = {
       iTime: { value: 0 },
@@ -514,7 +514,18 @@ document.addEventListener('DOMContentLoaded', () => {
       window.addEventListener('pointerleave', handlePointerLeave);
     }
 
-    const renderLoop = () => {
+    let lastTime = 0;
+    const fpsInterval = 1000 / 30; // Limit rendering to 30 FPS to reduce GPU workload and prevent lagging
+
+    const renderLoop = (timestamp) => {
+      particlesRAF = requestAnimationFrame(renderLoop);
+
+      if (!timestamp) return;
+
+      const elapsed = timestamp - lastTime;
+      if (elapsed < fpsInterval) return;
+      lastTime = timestamp - (elapsed % fpsInterval);
+
       uniforms.iTime.value = clock.getElapsedTime();
 
       if (interactive) {
@@ -530,9 +541,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       renderer.render(scene, camera);
-      requestAnimationFrame(renderLoop);
     };
-    renderLoop();
+    requestAnimationFrame(renderLoop);
   };
 
   // ── Toast Notifications ─────────────────────────────────────
@@ -2376,15 +2386,76 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       try {
-        const constraints = {
-          video: {
-            width: { ideal: 640 },
-            height: { ideal: 480 },
-            facingMode: { ideal: "environment" }
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (isMobile) {
+          // On mobile: request built-in back camera directly (avoiding choosing prompts)
+          const constraints = {
+            video: {
+              width: { ideal: 640 },
+              height: { ideal: 480 },
+              facingMode: { ideal: "environment" }
+            }
+          };
+          cctvStream = await navigator.mediaDevices.getUserMedia(constraints);
+        } else {
+          // On desktop/laptop:
+          // 1. Get temporary default stream to trigger user permission and fetch populated labels
+          const tempStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { width: { ideal: 640 }, height: { ideal: 480 } } 
+          });
+          
+          let selectedDevice = null;
+          try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(d => d.kind === 'videoinput');
+            console.log("Desktop video input devices:", videoDevices);
+            
+            const isVirtual = (label) => {
+              const l = label.toLowerCase();
+              return l.includes('virtual') || l.includes('wireless') || l.includes('droidcam') || 
+                     l.includes('epoccam') || l.includes('iriun') || l.includes('m2010j19cg') || 
+                     l.includes('obs') || l.includes('link') || l.includes('phone') || l.includes('share') ||
+                     l.includes('ivcam');
+            };
+            
+            // Look for built-in webcams first
+            let builtIn = videoDevices.find(d => {
+              const l = d.label.toLowerCase();
+              return (l.includes('integrated') || l.includes('built-in') || l.includes('webcam') || 
+                      l.includes('internal') || l.includes('facetime') || l.includes('camera')) && !isVirtual(d.label);
+            });
+            
+            if (!builtIn) {
+              // Fallback to any non-virtual camera
+              builtIn = videoDevices.find(d => !isVirtual(d.label) && d.label !== '');
+            }
+            
+            if (builtIn) {
+              selectedDevice = builtIn;
+            }
+          } catch (deviceErr) {
+            console.warn("Could not select physical webcam:", deviceErr);
           }
-        };
-
-        cctvStream = await navigator.mediaDevices.getUserMedia(constraints);
+          
+          if (selectedDevice) {
+            // Stop temporary stream tracks
+            tempStream.getTracks().forEach(t => t.stop());
+            
+            // Request the specific built-in physical camera
+            cctvStream = await navigator.mediaDevices.getUserMedia({
+              video: {
+                deviceId: { exact: selectedDevice.deviceId },
+                width: { ideal: 640 },
+                height: { ideal: 480 }
+              }
+            });
+            console.log("Using built-in camera:", selectedDevice.label);
+          } else {
+            // Fallback to the temporary stream if no built-in camera is found
+            cctvStream = tempStream;
+          }
+        }
         
         video.srcObject = cctvStream;
         video.style.display = 'block';
