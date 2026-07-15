@@ -3718,7 +3718,7 @@ body.light-theme .chat-bg-orbit-icon {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  z-index: 20001;
+  z-index: 20005;
   background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%);
   pointer-events: none;
 }
