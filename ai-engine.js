@@ -12,7 +12,7 @@ const AI = (() => {
   // ── Claude API Caller ──────────────────────────────────────
   const callClaude = async (systemPrompt, userPrompt) => {
     let apiKey = (localStorage.getItem('anthropic-api-key') || '').trim().replace(/\.$/, '');
-    
+
     // Fallback to default demo key if not configured in Settings
     if (!apiKey) {
       apiKey = DEFAULT_API_KEY;
@@ -26,8 +26,8 @@ const AI = (() => {
 
     if (isOpenRouter) {
       try {
-        const endpoint = DEFAULT_BASE_URL.endsWith('/') 
-          ? `${DEFAULT_BASE_URL}chat/completions` 
+        const endpoint = DEFAULT_BASE_URL.endsWith('/')
+          ? `${DEFAULT_BASE_URL}chat/completions`
           : `${DEFAULT_BASE_URL}/chat/completions`;
 
         const response = await fetch(endpoint, {
@@ -101,11 +101,11 @@ const AI = (() => {
       if (!response.ok) throw new Error('Open-Meteo HTTP error');
       const data = await response.json();
       const tempC = data.current.temperature_2m;
-      const tempF = Math.round((tempC * 9/5) + 32);
+      const tempF = Math.round((tempC * 9 / 5) + 32);
       const humidity = data.current.relative_humidity_2m;
-      
+
       const risk = tempF >= 100 ? 'CRITICAL' : tempF >= 88 ? 'HIGH' : tempF >= 75 ? 'MODERATE' : 'LOW';
-      
+
       DATA.heatZones.metlife = { tempF, humidity, risk };
       console.log('Open-Meteo weather update success:', tempF, 'F, humidity:', humidity, '%');
       return { tempF, humidity, risk };
@@ -120,11 +120,11 @@ const AI = (() => {
     let heatIndex = tempF + (humidity - 40) * 0.8;
     if (age > 60) heatIndex += 8;
     if (conditions.includes('cardiac') || conditions.includes('diabetes')) heatIndex += 10;
-    
+
     if (heatIndex >= 120) return { level: 'CRITICAL', color: '#FF1744', score: 100, advice: 'Seek immediate shade. Move to Medical Tent now.' };
-    if (heatIndex >= 108) return { level: 'HIGH',     color: '#FF6D00', score: 80,  advice: 'High risk. Stay in shade. Drink cool fluids.' };
-    if (heatIndex >= 95)  return { level: 'MODERATE', color: '#FFD600', score: 55,  advice: 'Moderate risk. Hydrate and avoid heavy exertion.' };
-    return                       { level: 'LOW',      color: '#00E676', score: 25,  advice: 'Low risk. Stay hydrated and have fun!' };
+    if (heatIndex >= 108) return { level: 'HIGH', color: '#FF6D00', score: 80, advice: 'High risk. Stay in shade. Drink cool fluids.' };
+    if (heatIndex >= 95) return { level: 'MODERATE', color: '#FFD600', score: 55, advice: 'Moderate risk. Hydrate and avoid heavy exertion.' };
+    return { level: 'LOW', color: '#00E676', score: 25, advice: 'Low risk. Stay hydrated and have fun!' };
   };
 
   // ── Personal Heat Risk Profile ────────────────────────────
@@ -171,10 +171,10 @@ const AI = (() => {
 
   // ── Crowd Risk Evaluator ──────────────────────────────────
   const crowdRisk = (density) => {
-    if (density >= 0.90) return { label: 'CRITICAL', color: '#FF1744', bg: 'rgba(255,23,68,0.15)',  emoji: '🔴' };
-    if (density >= 0.75) return { label: 'HIGH',     color: '#FF6D00', bg: 'rgba(255,109,0,0.15)',  emoji: '🟠' };
-    if (density >= 0.50) return { label: 'MEDIUM',   color: '#FFD600', bg: 'rgba(255,214,0,0.15)',  emoji: '🟡' };
-    return                      { label: 'LOW',      color: '#00E676', bg: 'rgba(0,230,118,0.15)',  emoji: '🟢' };
+    if (density >= 0.90) return { label: 'CRITICAL', color: '#FF1744', bg: 'rgba(255,23,68,0.15)', emoji: '🔴' };
+    if (density >= 0.75) return { label: 'HIGH', color: '#FF6D00', bg: 'rgba(255,109,0,0.15)', emoji: '🟠' };
+    if (density >= 0.50) return { label: 'MEDIUM', color: '#FFD600', bg: 'rgba(255,214,0,0.15)', emoji: '🟡' };
+    return { label: 'LOW', color: '#00E676', bg: 'rgba(0,230,118,0.15)', emoji: '🟢' };
   };
 
   // ── GenAI Chat Assistant (Multilingual & Grounded) ────────
@@ -185,7 +185,7 @@ const AI = (() => {
       try {
         const res = await fetch('fifa-knowledge.md');
         if (res.ok) cachedFifaKnowledge = await res.text();
-      } catch(e) {
+      } catch (e) {
         console.warn('Failed to fetch fifa-knowledge.md');
       }
     }
@@ -214,19 +214,19 @@ const AI = (() => {
       return await callClaude(systemPrompt, input);
     } catch (err) {
       console.warn('Claude assistant failure, falling back to cached responses:', err);
-      
+
       // Local keyword lookup fallback
       const lower = input.toLowerCase();
       const { aiChatResponses: r } = DATA;
       let rawResponse = r.default;
-      if (/gate|exit|entry|door/.test(lower))                  rawResponse = r.gate;
-      else if (/seat|section|row|where.*sit/.test(lower))      rawResponse = r.seat;
-      else if (/food|eat|drink|hungry|thirst|water/.test(lower))    rawResponse = r.food;
+      if (/gate|exit|entry|door/.test(lower)) rawResponse = r.gate;
+      else if (/seat|section|row|where.*sit/.test(lower)) rawResponse = r.seat;
+      else if (/food|eat|drink|hungry|thirst|water/.test(lower)) rawResponse = r.food;
       else if (/shuttle|bus|metro|transport|ride|uber|lyft|train/.test(lower)) rawResponse = r.shuttle;
       else if (/hot|heat|cool|dizzy|faint|medic|ill|sick/.test(lower)) rawResponse = r.heat;
-      else if (/lost|lost|child|kid|separate|find/.test(lower))     rawResponse = r.lost;
+      else if (/lost|lost|child|kid|separate|find/.test(lower)) rawResponse = r.lost;
       else if (/wifi|internet|connect|network|signal|offline/.test(lower)) rawResponse = r.wifi;
-      else if (/ticket|qr|code|entry|access|scan/.test(lower))      rawResponse = r.ticket;
+      else if (/ticket|qr|code|entry|access|scan/.test(lower)) rawResponse = r.ticket;
       else if (/translate|language|speak|help.*understand/.test(lower)) rawResponse = r.translate;
 
       return `[Simulation Mode: ${err.message}] \n\n${rawResponse}`;
@@ -255,7 +255,7 @@ const AI = (() => {
     } catch (err) {
       console.warn('GenAI BLE search steps failed, falling back to local simulation:', err);
       const stages = [
-        { t: 800,  msg: '[SIMULATION] Broadcasting BLE beacon on 2.4GHz mesh...', progress: 15 },
+        { t: 800, msg: '[SIMULATION] Broadcasting BLE beacon on 2.4GHz mesh...', progress: 15 },
         { t: 1800, msg: '[SIMULATION] 12 nearby peer devices relaying signal...', progress: 35 },
         { t: 3000, msg: '[SIMULATION] Signal triangulated - locating beacon...', progress: 60 },
         { t: 4200, msg: '[SIMULATION] Pinged nearest staff unit (Badge #4421)...', progress: 80 },
@@ -317,7 +317,7 @@ const AI = (() => {
   const predictCrowd30min = (zone) => {
     const match = DATA.matches.find(m => m.status === 'LIVE');
     let baseMultiplier = 1.0;
-    if (match && match.minute > 75) baseMultiplier = 1.25; 
+    if (match && match.minute > 75) baseMultiplier = 1.25;
     return Math.min(1.0, Math.max(0.1, zone.density * baseMultiplier));
   };
 
@@ -331,17 +331,17 @@ const AI = (() => {
     }
   };
 
-  return { 
-    heatRiskLevel, 
-    crowdRisk, 
-    typeText, 
-    getResponse, 
-    triageIncident, 
-    optimizeRoute, 
-    co2Score, 
-    personalRisk, 
-    bleBeaconSimulate, 
-    stadiumSummary, 
+  return {
+    heatRiskLevel,
+    crowdRisk,
+    typeText,
+    getResponse,
+    triageIncident,
+    optimizeRoute,
+    co2Score,
+    personalRisk,
+    bleBeaconSimulate,
+    stadiumSummary,
     predictCrowd30min,
     fetchLiveWeather,
     updateCrowdExplanations
