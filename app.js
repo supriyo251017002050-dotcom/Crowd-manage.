@@ -25,6 +25,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Router ─────────────────────────────────────────────────
   const navigate = (pageId) => {
+    // If leaving the perimeter page and the camera is active, disconnect it
+    if (activePage === 'perimeter' && pageId !== 'perimeter') {
+      if (cctvActive && typeof window.toggleCctvAI === 'function') {
+        window.toggleCctvAI();
+      }
+    }
+
     // If not authenticated, redirect all navigation attempts to the authentication screen
     if (!isUserAuthenticated && pageId !== 'auth') {
       pageId = 'auth';
